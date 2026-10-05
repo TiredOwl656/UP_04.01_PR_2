@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// Описание одного поля формы.
+import '../core/api_exceptions.dart';
+
 class FormFieldSpec {
   final String key;
   final String label;
@@ -21,7 +22,6 @@ class FormFieldSpec {
   });
 }
 
-/// Универсальная форма: список полей + коллбэк отправки.
 class EntityForm extends StatefulWidget {
   final String title;
   final List<FormFieldSpec> fields;
@@ -47,6 +47,7 @@ class EntityForm extends StatefulWidget {
 class _EntityFormState extends State<EntityForm> {
   final _formKey = GlobalKey<FormState>();
   final _controllers = <String, TextEditingController>{};
+  final _serverErrors = <String, String>{};
   bool _dirty = false;
   bool _submitting = false;
 
@@ -95,13 +96,29 @@ class _EntityFormState extends State<EntityForm> {
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    setState(() => _submitting = true);
+
+    final messenger = ScaffoldMessenger.of(context);
+    final formState = _formKey.currentState;
+
+    setState(() {
+      _submitting = true;
+      _serverErrors.clear();
+    });
+
     try {
       final values = {
         for (final e in _controllers.entries) e.key: e.value.text.trim(),
       };
       await widget.onSubmit(values);
       _dirty = false;
+    } on ValidationException catch (e) {
+      if (!mounted) return;
+      setState(() => _serverErrors.addAll(e.errors));
+      formState?.validate();
+    } on ConflictException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+    } on ApiException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.message)));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -113,9 +130,9 @@ class _EntityFormState extends State<EntityForm> {
       canPop: !_dirty,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
-        if (await _confirmDiscard() && mounted) {
-          // ignore: use_build_context_synchronously
-          Navigator.of(context).pop();
+        final navigator = Navigator.of(context);
+        if (await _confirmDiscard()) {
+          navigator.pop();
         }
       },
       child: Scaffold(
@@ -138,7 +155,11 @@ class _EntityFormState extends State<EntityForm> {
                     border: const OutlineInputBorder(),
                   ),
                   keyboardType: f.keyboardType,
-                  validator: f.validator,
+                  validator: (v) {
+                    final server = _serverErrors[f.key];
+                    if (server != null) return server;
+                    return f.validator?.call(v);
+                  },
                   obscureText: f.obscureText,
                   maxLines: f.maxLines,
                 ),

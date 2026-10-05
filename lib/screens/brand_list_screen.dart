@@ -3,13 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../models/brand.dart';
-import '../repositories/persistent_product_repository.dart';
-import '../repositories/product_repository.dart';
 import '../state/brand_list_notifier.dart';
 import '../widgets/adaptive_entity_view.dart';
 import '../widgets/entity_table.dart';
 import '../widgets/pagination_bar.dart';
 import '../widgets/state_views.dart';
+import '../core/api_exceptions.dart';
 
 class BrandListScreen extends StatefulWidget {
   const BrandListScreen({super.key});
@@ -43,24 +42,16 @@ class _BrandListScreenState extends State<BrandListScreen> {
   }
 
   Future<void> _tryDelete(int id, String name) async {
-    final productRepo = context.read<ProductRepository>();
     final notifier = context.read<BrandListNotifier>();
-
-    var linked = 0;
-    if (productRepo is PersistentProductRepository) {
-      linked = await productRepo.countByBrand(id);
-    }
-
-    if (linked > 0) {
+    try {
+      await notifier.softDelete(id);
+    } on ConflictException catch (e) {
       if (!mounted) return;
       await showDialog<void>(
         context: context,
         builder: (_) => AlertDialog(
           title: const Text('Удаление невозможно'),
-          content: Text(
-            'На бренд «$name» ссылаются товары: $linked шт.\n'
-            'Сначала удалите или переназначьте эти товары.',
-          ),
+          content: Text(e.message),
           actions: [
             FilledButton(
               onPressed: () => Navigator.pop(context),
@@ -69,10 +60,11 @@ class _BrandListScreenState extends State<BrandListScreen> {
           ],
         ),
       );
-      return;
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.message)));
     }
-
-    await notifier.softDelete(id);
   }
 
   @override

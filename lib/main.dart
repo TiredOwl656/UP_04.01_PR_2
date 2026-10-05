@@ -1,23 +1,20 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:provider/provider.dart';
 
 import 'app.dart';
-
-// Репозитории
+import 'core/api_client.dart';
+import 'repositories/api_brand_repository.dart';
+import 'repositories/api_category_repository.dart';
+import 'repositories/api_customer_repository.dart';
+import 'repositories/api_product_repository.dart';
+import 'repositories/api_supplier_repository.dart';
 import 'repositories/brand_repository.dart';
 import 'repositories/category_repository.dart';
 import 'repositories/customer_repository.dart';
-import 'repositories/persistent_brand_repository.dart';
-import 'repositories/persistent_category_repository.dart';
-import 'repositories/persistent_customer_repository.dart';
-import 'repositories/persistent_product_repository.dart';
-import 'repositories/persistent_supplier_repository.dart';
 import 'repositories/product_repository.dart';
 import 'repositories/supplier_repository.dart';
-
-// Состояние
 import 'state/brand_list_notifier.dart';
 import 'state/category_list_notifier.dart';
 import 'state/customer_list_notifier.dart';
@@ -27,31 +24,31 @@ import 'state/supplier_list_notifier.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
-  final prefs = await SharedPreferences.getInstance();
 
   runApp(
     MultiProvider(
       providers: [
-        // --- репозитории ---
+        Provider<Dio>(create: (_) => buildDio()),
+
         Provider<ProductRepository>(
-          create: (_) => PersistentProductRepository(prefs),
+          create: (c) => ApiProductRepository(c.read<Dio>()),
         ),
         Provider<BrandRepository>(
-          create: (_) => PersistentBrandRepository(prefs),
+          create: (c) => ApiBrandRepository(c.read<Dio>()),
         ),
         Provider<CategoryRepository>(
-          create: (_) => PersistentCategoryRepository(prefs),
+          create: (c) => ApiCategoryRepository(c.read<Dio>()),
         ),
         Provider<SupplierRepository>(
-          create: (_) => PersistentSupplierRepository(prefs),
+          create: (c) => ApiSupplierRepository(c.read<Dio>()),
         ),
         Provider<CustomerRepository>(
-          create: (_) => PersistentCustomerRepository(prefs),
+          create: (c) => ApiCustomerRepository(c.read<Dio>()),
         ),
 
-        // --- состояние ---
         ChangeNotifierProvider(
-          create: (c) => ProductListNotifier(c.read<ProductRepository>())..load(),
+          create: (c) =>
+              ProductListNotifier(c.read<ProductRepository>())..load(),
         ),
         ChangeNotifierProvider(
           create: (c) => BrandListNotifier(c.read<BrandRepository>())..load(),

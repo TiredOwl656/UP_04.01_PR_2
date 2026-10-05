@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:pr_2_clothing_store/core/api_exceptions.dart';
 import '../models/brand.dart';
 import '../models/brand_query.dart';
 import '../models/page_result.dart';
@@ -34,8 +35,11 @@ class BrandListNotifier extends ChangeNotifier {
     try {
       _result = await _repository.find(_query);
       _status = LoadStatus.success;
+    } on ApiException catch (e) {
+      _error = e.message;
+      _status = LoadStatus.error;
     } catch (e) {
-      _error = 'Не удалось загрузить список брендов: $e';
+      _error = 'Не удалось загрузить список: $e';
       _status = LoadStatus.error;
     }
     notifyListeners();

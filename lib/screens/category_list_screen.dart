@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../repositories/persistent_product_repository.dart';
-import '../repositories/product_repository.dart';
 import '../state/category_list_notifier.dart';
 import '../widgets/state_views.dart';
+import '../core/api_exceptions.dart';
 
 class CategoryListScreen extends StatefulWidget {
   const CategoryListScreen({super.key});
@@ -18,24 +17,16 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
   bool _showDeleted = false;
 
   Future<void> _tryDelete(int id, String name) async {
-    final productRepo = context.read<ProductRepository>();
     final notifier = context.read<CategoryListNotifier>();
-
-    var linked = 0;
-    if (productRepo is PersistentProductRepository) {
-      linked = await productRepo.countByCategory(id);
-    }
-
-    if (linked > 0) {
+    try {
+      await notifier.softDelete(id);
+    } on ConflictException catch (e) {
       if (!mounted) return;
       await showDialog<void>(
         context: context,
         builder: (_) => AlertDialog(
           title: const Text('Удаление невозможно'),
-          content: Text(
-            'На категорию «$name» ссылаются товары: $linked шт.\n'
-            'Сначала удалите или переназначьте эти товары.',
-          ),
+          content: Text(e.message),
           actions: [
             FilledButton(
               onPressed: () => Navigator.pop(context),
@@ -44,10 +35,11 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
           ],
         ),
       );
-      return;
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.message)));
     }
-
-    await notifier.softDelete(id);
   }
 
   @override

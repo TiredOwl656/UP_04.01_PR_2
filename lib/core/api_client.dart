@@ -1,0 +1,54 @@
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+
+import 'api_exceptions.dart';
+import 'config.dart';
+
+Dio buildDio() {
+  final dio = Dio(
+    BaseOptions(
+      baseUrl: apiBaseUrl,
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 15),
+      headers: {'Content-Type': 'application/json'},
+      validateStatus: (status) => status != null && status < 500,
+    ),
+  );
+
+  dio.interceptors.add(
+    InterceptorsWrapper(
+      onRequest: (options, handler) {
+        if (kDebugMode) {
+          debugPrint('[API] → ${options.method} ${options.uri}');
+        }
+        return handler.next(options);
+      },
+      onResponse: (response, handler) {
+        if (kDebugMode) {
+          debugPrint('[API] ← ${response.statusCode} ${response.requestOptions.uri}');
+        }
+        final status = response.statusCode ?? 0;
+        if (status >= 400) {
+          return handler.reject(
+            DioException(
+              requestOptions: response.requestOptions,
+              response: response,
+              type: DioExceptionType.badResponse,
+              error: mapHttpError(status, response.data),
+            ),
+            true,
+          );
+        }
+        return handler.next(response);
+      },
+      onError: (error, handler) {
+        if (kDebugMode) {
+          debugPrint('[API] ✗ ${error.requestOptions.uri}: ${error.type}');
+        }
+        return handler.next(error);
+      },
+    ),
+  );
+
+  return dio;
+}

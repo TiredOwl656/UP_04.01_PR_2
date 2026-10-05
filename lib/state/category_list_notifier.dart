@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:pr_2_clothing_store/core/api_exceptions.dart';
 import '../models/product_category.dart';
 import '../repositories/category_repository.dart';
 import 'product_list_notifier.dart' show LoadStatus;
@@ -22,8 +23,11 @@ class CategoryListNotifier extends ChangeNotifier {
     try {
       _items = await _repository.findAll();
       _status = LoadStatus.success;
+    } on ApiException catch (e) {
+      _error = e.message;
+      _status = LoadStatus.error;
     } catch (e) {
-      _error = 'Не удалось загрузить категории: $e';
+      _error = 'Не удалось загрузить список: $e';
       _status = LoadStatus.error;
     }
     notifyListeners();
