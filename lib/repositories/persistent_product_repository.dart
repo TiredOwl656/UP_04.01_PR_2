@@ -144,7 +144,7 @@ class PersistentProductRepository implements ProductRepository {
   @override
   Future<Product> update(Product p) async {
     final i = _products.indexWhere((x) => x.id == p.id);
-    if (i == -1) throw StateError('РўРѕРІР°СЂ ${p.id} РЅРµ РЅР°Р№РґРµРЅ');
+    if (i == -1) throw StateError('Товар ${p.id} не найден');
     _products[i] = p;
     await _persist();
     return p;
@@ -153,7 +153,7 @@ class PersistentProductRepository implements ProductRepository {
   @override
   Future<void> softDelete(int id) async {
     final i = _products.indexWhere((p) => p.id == id);
-    if (i == -1) throw StateError('РўРѕРІР°СЂ $id РЅРµ РЅР°Р№РґРµРЅ');
+    if (i == -1) throw StateError('Товар $id не найден');
     _products[i] = _products[i].copyWith(deletedAt: DateTime.now());
     await _persist();
   }
@@ -167,7 +167,7 @@ class PersistentProductRepository implements ProductRepository {
   @override
   Future<void> restore(int id) async {
     final i = _products.indexWhere((p) => p.id == id);
-    if (i == -1) throw StateError('РўРѕРІР°СЂ $id РЅРµ РЅР°Р№РґРµРЅ');
+    if (i == -1) throw StateError('Товар $id не найден');
     _products[i] = _products[i].copyWith(clearDeletedAt: true);
     await _persist();
   }

@@ -80,7 +80,7 @@ class PersistentSupplierRepository implements SupplierRepository {
   @override
   Future<Supplier> update(Supplier s) async {
     final i = _suppliers.indexWhere((x) => x.id == s.id);
-    if (i == -1) throw StateError('РџРѕСЃС‚Р°РІС‰РёРє ${s.id} РЅРµ РЅР°Р№РґРµРЅ');
+    if (i == -1) throw StateError('Поставщик ${s.id} не найден');
     _suppliers[i] = s;
     await _persist();
     return s;
@@ -89,7 +89,7 @@ class PersistentSupplierRepository implements SupplierRepository {
   @override
   Future<void> softDelete(int id) async {
     final i = _suppliers.indexWhere((s) => s.id == id);
-    if (i == -1) throw StateError('РџРѕСЃС‚Р°РІС‰РёРє $id РЅРµ РЅР°Р№РґРµРЅ');
+    if (i == -1) throw StateError('Поставщик $id не найден');
     _suppliers[i] = _suppliers[i].copyWith(deletedAt: DateTime.now());
     await _persist();
   }
@@ -103,7 +103,7 @@ class PersistentSupplierRepository implements SupplierRepository {
   @override
   Future<void> restore(int id) async {
     final i = _suppliers.indexWhere((s) => s.id == id);
-    if (i == -1) throw StateError('РџРѕСЃС‚Р°РІС‰РёРє $id РЅРµ РЅР°Р№РґРµРЅ');
+    if (i == -1) throw StateError('Поставщик $id не найден');
     _suppliers[i] = _suppliers[i].copyWith(clearDeletedAt: true);
     await _persist();
   }

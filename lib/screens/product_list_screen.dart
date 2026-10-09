@@ -6,6 +6,7 @@ import '../models/brand.dart';
 import '../models/product.dart';
 import '../models/product_category.dart';
 import '../models/product_query.dart';
+import '../state/auth_notifier.dart';
 import '../state/brand_list_notifier.dart';
 import '../state/category_list_notifier.dart';
 import '../state/product_list_notifier.dart';
@@ -54,36 +55,50 @@ class _ProductListScreenState extends State<ProductListScreen> {
     final notifier = context.watch<ProductListNotifier>();
     final categories = context.watch<CategoryListNotifier>().items;
     final brands = context.watch<BrandListNotifier>().result.items;
+    final auth = context.watch<AuthNotifier>();
     final q = notifier.query;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Каталог товаров'),
         actions: [
+          if (auth.canPlaceOrder)
+            IconButton(
+              icon: const Icon(Icons.shopping_cart),
+              tooltip: 'Корзина',
+              onPressed: () => context.go('/cart'),
+            ),
+          if (auth.canViewOwnOrders)
+            IconButton(
+              icon: const Icon(Icons.receipt_long),
+              tooltip: 'Мои заказы',
+              onPressed: () => context.go('/orders/my'),
+            ),
+          if (auth.canViewAllOrders)
+            IconButton(
+              icon: const Icon(Icons.receipt_long),
+              tooltip: 'Все заказы',
+              onPressed: () => context.go('/orders'),
+            ),
+          if (auth.canModerateReviews)
+            IconButton(
+              icon: const Icon(Icons.rate_review),
+              tooltip: 'Модерация отзывов',
+              onPressed: () => context.go('/reviews/moderation'),
+            ),
+          if (auth.canManageCatalog)
+            IconButton(
+              icon: const Icon(Icons.admin_panel_settings),
+              tooltip: 'Панель администратора',
+              onPressed: () => context.go('/'),
+            ),
           IconButton(
-            icon: const Icon(Icons.category),
-            tooltip: 'Категории',
-            onPressed: () => context.go('/categories'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.local_shipping),
-            tooltip: 'Поставщики',
-            onPressed: () => context.go('/suppliers'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.people),
-            tooltip: 'Покупатели',
-            onPressed: () => context.go('/customers'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.storefront),
-            tooltip: 'Бренды',
-            onPressed: () => context.go('/brands'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: 'Добавить товар',
-            onPressed: () => context.go('/products/new'),
+            icon: const Icon(Icons.logout),
+            tooltip: 'Выйти',
+            onPressed: () async {
+              await context.read<AuthNotifier>().logout();
+              if (context.mounted) context.go('/login');
+            },
           ),
         ],
       ),
@@ -192,17 +207,20 @@ class _ProductListScreenState extends State<ProductListScreen> {
                         ),
                         actions: (p) => [
                           if (p.isDeleted)
-                            IconButton(
-                              icon: const Icon(Icons.restore),
-                              tooltip: 'Восстановить',
-                              onPressed: () => notifier.restore(p.id),
-                            )
-                          else ...[
+                            if (auth.canManageCatalog)
+                              IconButton(
+                                icon: const Icon(Icons.restore),
+                                tooltip: 'Восстановить',
+                                onPressed: () => notifier.restore(p.id),
+                              )
+                            else
+                              const SizedBox.shrink()
+                          else if (auth.canManageCatalog) ...[
                             IconButton(
                               icon: const Icon(Icons.edit),
                               tooltip: 'Редактировать',
                               onPressed: () =>
-                                  context.go('/products/${p.id}/edit'),
+                                  context.go('/admin/products/${p.id}/edit'),
                             ),
                             IconButton(
                               icon: const Icon(Icons.delete_outline),
@@ -216,7 +234,18 @@ class _ProductListScreenState extends State<ProductListScreen> {
                               onPressed: () =>
                                   _confirmHardDelete(context, notifier, p),
                             ),
-                          ],
+                          ] else
+                            IconButton(
+                              icon: const Icon(Icons.add_shopping_cart),
+                              tooltip: 'В корзину',
+                              onPressed: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('«${p.name}» добавлен в корзину'),
+                                  ),
+                                );
+                              },
+                            ),
                         ],
                       ),
                     ),

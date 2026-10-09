@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../core/api_exceptions.dart';
 import '../models/brand.dart';
 import '../state/brand_list_notifier.dart';
 import '../widgets/adaptive_entity_view.dart';
 import '../widgets/entity_table.dart';
 import '../widgets/pagination_bar.dart';
 import '../widgets/state_views.dart';
-import '../core/api_exceptions.dart';
 
 class BrandListScreen extends StatefulWidget {
   const BrandListScreen({super.key});
@@ -24,6 +24,7 @@ class _BrandListScreenState extends State<BrandListScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       _searchCtrl.text = context.read<BrandListNotifier>().query.search;
     });
   }
@@ -38,7 +39,7 @@ class _BrandListScreenState extends State<BrandListScreen> {
     final qs = params.entries
         .map((e) => '${e.key}=${Uri.encodeComponent(e.value)}')
         .join('&');
-    context.go('/brands?$qs');
+    context.go('/admin/brands?$qs');
   }
 
   Future<void> _tryDelete(int id, String name) async {
@@ -74,11 +75,18 @@ class _BrandListScreenState extends State<BrandListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Р‘СЂРµРЅРґС‹'),
+        title: const Text('Бренды'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/products'),
+          onPressed: () => context.go('/'),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            tooltip: 'Добавить',
+            onPressed: () => context.go('/admin/brands/new'),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -91,7 +99,7 @@ class _BrandListScreenState extends State<BrandListScreen> {
                     controller: _searchCtrl,
                     decoration: const InputDecoration(
                       prefixIcon: Icon(Icons.search),
-                      hintText: 'РџРѕРёСЃРє РїРѕ РЅР°Р·РІР°РЅРёСЋ РёР»Рё СЃС‚СЂР°РЅРµ',
+                      hintText: 'Поиск по названию или стране',
                       border: OutlineInputBorder(),
                       isDense: true,
                     ),
@@ -104,10 +112,11 @@ class _BrandListScreenState extends State<BrandListScreen> {
                   children: [
                     Checkbox(
                       value: q.includeDeleted,
-                      onChanged: (v) =>
-                          _go(q.copyWith(includeDeleted: v ?? false).toQueryParams()),
+                      onChanged: (v) => _go(
+                        q.copyWith(includeDeleted: v ?? false).toQueryParams(),
+                      ),
                     ),
-                    const Text('РЈРґР°Р»С‘РЅРЅС‹Рµ'),
+                    const Text('Удалённые'),
                   ],
                 ),
               ],
@@ -133,52 +142,69 @@ class _BrandListScreenState extends State<BrandListScreen> {
                           q
                               .copyWith(
                                 sortField: field,
-                                sortAscending: field == q.sortField ? !q.sortAscending : true,
+                                sortAscending:
+                                    field == q.sortField ? !q.sortAscending : true,
                               )
                               .toQueryParams(),
                         ),
                         isDeleted: (b) => b.isDeleted,
                         columns: [
                           TableColumnSpec(
-                              label: 'РќР°Р·РІР°РЅРёРµ', sortField: 'name', build: (b) => Text(b.name)),
+                            label: 'Название',
+                            sortField: 'name',
+                            build: (b) => Text(b.name),
+                          ),
                           TableColumnSpec(
-                              label: 'РЎС‚СЂР°РЅР°',
-                              sortField: 'country',
-                              build: (b) => Text(b.country)),
+                            label: 'Страна',
+                            sortField: 'country',
+                            build: (b) => Text(b.country),
+                          ),
                           TableColumnSpec(
-                              label: 'РћСЃРЅРѕРІР°РЅ',
-                              sortField: 'founded',
-                              numeric: true,
-                              build: (b) => Text('${b.foundedYear}')),
+                            label: 'Основан',
+                            sortField: 'founded',
+                            numeric: true,
+                            build: (b) => Text('${b.foundedYear}'),
+                          ),
                         ],
                         cardBuilder: (b) => Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(b.name,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 16)),
-                            Text('РЎС‚СЂР°РЅР°: ${b.country}'),
-                            Text('РћСЃРЅРѕРІР°РЅ: ${b.foundedYear}'),
+                            Text(
+                              b.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            Text('Страна: ${b.country}'),
+                            Text('Основан: ${b.foundedYear}'),
                             if (b.isDeleted)
-                              const Text('РЈРґР°Р»С‘РЅ', style: TextStyle(color: Colors.red)),
+                              const Text(
+                                'Удалён',
+                                style: TextStyle(color: Colors.red),
+                              ),
                           ],
                         ),
                         actions: (b) => [
-                          IconButton(
-                            icon: const Icon(Icons.open_in_new),
-                            tooltip: 'РћС‚РєСЂС‹С‚СЊ',
-                            onPressed: () => context.go('/brands/${b.id}'),
-                          ),
                           if (b.isDeleted)
                             IconButton(
                               icon: const Icon(Icons.restore),
+                              tooltip: 'Восстановить',
                               onPressed: () => n.restore(b.id),
                             )
-                          else
+                          else ...[
+                            IconButton(
+                              icon: const Icon(Icons.edit),
+                              tooltip: 'Редактировать',
+                              onPressed: () =>
+                                  context.go('/admin/brands/${b.id}/edit'),
+                            ),
                             IconButton(
                               icon: const Icon(Icons.delete_outline),
+                              tooltip: 'Удалить',
                               onPressed: () => _tryDelete(b.id, b.name),
                             ),
+                          ],
                         ],
                       ),
                     ),
@@ -189,7 +215,8 @@ class _BrandListScreenState extends State<BrandListScreen> {
                     total: n.result.total,
                     size: q.size,
                     onPage: (p) => _go(q.withPage(p).toQueryParams()),
-                    onSize: (s) => _go(q.copyWith(size: s, page: 1).toQueryParams()),
+                    onSize: (s) =>
+                        _go(q.copyWith(size: s, page: 1).toQueryParams()),
                   ),
                 ],
               ),

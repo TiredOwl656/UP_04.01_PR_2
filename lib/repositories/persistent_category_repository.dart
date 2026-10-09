@@ -78,7 +78,7 @@ class PersistentCategoryRepository implements CategoryRepository {
   @override
   Future<ProductCategory> update(ProductCategory c) async {
     final i = _categories.indexWhere((x) => x.id == c.id);
-    if (i == -1) throw StateError('РљР°С‚РµРіРѕСЂРёСЏ ${c.id} РЅРµ РЅР°Р№РґРµРЅР°');
+    if (i == -1) throw StateError('Категория ${c.id} не найдена');
     _categories[i] = c;
     await _persist();
     return c;
@@ -87,7 +87,7 @@ class PersistentCategoryRepository implements CategoryRepository {
   @override
   Future<void> softDelete(int id) async {
     final i = _categories.indexWhere((c) => c.id == id);
-    if (i == -1) throw StateError('РљР°С‚РµРіРѕСЂРёСЏ $id РЅРµ РЅР°Р№РґРµРЅР°');
+    if (i == -1) throw StateError('Категория $id не найдена');
     _categories[i] = _categories[i].copyWith(deletedAt: DateTime.now());
     await _persist();
   }
@@ -101,7 +101,7 @@ class PersistentCategoryRepository implements CategoryRepository {
   @override
   Future<void> restore(int id) async {
     final i = _categories.indexWhere((c) => c.id == id);
-    if (i == -1) throw StateError('РљР°С‚РµРіРѕСЂРёСЏ $id РЅРµ РЅР°Р№РґРµРЅР°');
+    if (i == -1) throw StateError('Категория $id не найдена');
     _categories[i] = _categories[i].copyWith(clearDeletedAt: true);
     await _persist();
   }

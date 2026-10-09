@@ -96,15 +96,10 @@ class _EntityFormState extends State<EntityForm> {
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-
-    final messenger = ScaffoldMessenger.of(context);
-    final formState = _formKey.currentState;
-
     setState(() {
       _submitting = true;
       _serverErrors.clear();
     });
-
     try {
       final values = {
         for (final e in _controllers.entries) e.key: e.value.text.trim(),
@@ -114,11 +109,19 @@ class _EntityFormState extends State<EntityForm> {
     } on ValidationException catch (e) {
       if (!mounted) return;
       setState(() => _serverErrors.addAll(e.errors));
-      formState?.validate();
+      _formKey.currentState?.validate();
     } on ConflictException catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.message)));
+    } on ForbiddenException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.message)));
     } on ApiException catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.message)));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -130,9 +133,9 @@ class _EntityFormState extends State<EntityForm> {
       canPop: !_dirty,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
-        final navigator = Navigator.of(context);
-        if (await _confirmDiscard()) {
-          navigator.pop();
+        if (await _confirmDiscard() && mounted) {
+          // ignore: use_build_context_synchronously
+          Navigator.of(context).pop();
         }
       },
       child: Scaffold(
