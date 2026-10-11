@@ -45,14 +45,12 @@ class ProductQuery {
       yearTo: yearTo == _unset ? this.yearTo : yearTo as int?,
       sortField: sortField ?? this.sortField,
       sortAscending: sortAscending ?? this.sortAscending,
-      // Любое изменение условий отбора возвращает на первую страницу
       page: page ?? 1,
       size: size ?? this.size,
       includeDeleted: includeDeleted ?? this.includeDeleted,
     );
   }
 
-  /// Явный сброс страницы (например, при клике по пагинации).
   ProductQuery withPage(int p) => copyWith(page: p);
 
   Map<String, String> toQueryParams() => {
@@ -93,4 +91,33 @@ class ProductQuery {
       includeDeleted: s('includeDeleted') == 'true',
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ProductQuery &&
+          other.search == search &&
+          other.categoryId == categoryId &&
+          other.brandId == brandId &&
+          other.yearFrom == yearFrom &&
+          other.yearTo == yearTo &&
+          other.sortField == sortField &&
+          other.sortAscending == sortAscending &&
+          other.page == page &&
+          other.size == size &&
+          other.includeDeleted == includeDeleted;
+
+  @override
+  int get hashCode => Object.hash(
+        search,
+        categoryId,
+        brandId,
+        yearFrom,
+        yearTo,
+        sortField,
+        sortAscending,
+        page,
+        size,
+        includeDeleted,
+      );
 }

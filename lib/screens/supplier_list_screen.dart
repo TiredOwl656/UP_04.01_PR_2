@@ -25,12 +25,12 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
       await showDialog<void>(
         context: context,
         builder: (_) => AlertDialog(
-          title: const Text('Удаление невозможно'),
+          title: const Text('РЈРґР°Р»РµРЅРёРµ РЅРµРІРѕР·РјРѕР¶РЅРѕ'),
           content: Text(e.message),
           actions: [
             FilledButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Понятно'),
+              child: const Text('РџРѕРЅСЏС‚РЅРѕ'),
             ),
           ],
         ),
@@ -51,10 +51,10 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Поставщики'),
+        title: const Text('РџРѕСЃС‚Р°РІС‰РёРєРё'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/products'),
+          onPressed: () => context.go('/'),
         ),
         actions: [
           IconButton(
@@ -67,7 +67,7 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
         children: [
           CheckboxListTile(
             contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-            title: const Text('Показывать удалённые'),
+            title: const Text('РџРѕРєР°Р·С‹РІР°С‚СЊ СѓРґР°Р»С‘РЅРЅС‹Рµ'),
             value: _showDeleted,
             onChanged: (v) => setState(() => _showDeleted = v ?? false),
           ),
@@ -95,14 +95,14 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
                             )
                           : null,
                     ),
-                    subtitle: Text('${s.country} • ${s.email} • ${s.phone}'),
+                    subtitle: Text('${s.country} вЂў ${s.email} вЂў ${s.phone}'),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (deleted)
                           IconButton(
                             icon: const Icon(Icons.restore),
-                            tooltip: 'Восстановить',
+                            tooltip: 'Р’РѕСЃСЃС‚Р°РЅРѕРІРёС‚СЊ',
                             onPressed: () => n.restore(s.id),
                           )
                         else ...[

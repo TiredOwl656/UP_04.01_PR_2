@@ -142,8 +142,9 @@ class _BrandListScreenState extends State<BrandListScreen> {
                           q
                               .copyWith(
                                 sortField: field,
-                                sortAscending:
-                                    field == q.sortField ? !q.sortAscending : true,
+                                sortAscending: field == q.sortField
+                                    ? !q.sortAscending
+                                    : true,
                               )
                               .toQueryParams(),
                         ),

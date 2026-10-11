@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../core/api_exceptions.dart';
@@ -32,7 +33,9 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
       });
     } on ApiException catch (e) {
       if (!mounted) return;
-      setState(() => _error = e.message);
+      setState(() {
+        _error = e.message;
+      });
     }
   }
 
@@ -51,22 +54,42 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
   Widget build(BuildContext context) {
     if (_error != null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Мои заказы')),
+        appBar: AppBar(
+          title: const Text('Мои заказы'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => context.go('/'),
+          ),
+        ),
         body: Center(child: Text(_error!)),
       );
     }
     if (_orders == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
     if (_orders!.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Мои заказы')),
+        appBar: AppBar(
+          title: const Text('Мои заказы'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => context.go('/'),
+          ),
+        ),
         body: const Center(child: Text('Заказов пока нет')),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Мои заказы')),
+      appBar: AppBar(
+        title: const Text('Мои заказы'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go('/'),
+        ),
+      ),
       body: ListView.separated(
         padding: const EdgeInsets.all(12),
         itemCount: _orders!.length,

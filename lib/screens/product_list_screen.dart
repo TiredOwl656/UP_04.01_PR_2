@@ -3,11 +3,13 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../models/brand.dart';
+import '../models/order.dart' show OrderItem;
 import '../models/product.dart';
 import '../models/product_category.dart';
 import '../models/product_query.dart';
 import '../state/auth_notifier.dart';
 import '../state/brand_list_notifier.dart';
+import '../state/cart_notifier.dart';
 import '../state/category_list_notifier.dart';
 import '../state/product_list_notifier.dart';
 import '../widgets/adaptive_entity_view.dart';
@@ -50,29 +52,95 @@ class _ProductListScreenState extends State<ProductListScreen> {
     context.go('/products?$qs');
   }
 
+  void _addToCart(Product p) {
+    if (p.stock <= 0) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Товара нет в наличии')));
+      return;
+    }
+    final ok = context.read<CartNotifier>().add(
+      OrderItem(
+        productId: p.id,
+        productName: p.name,
+        price: p.price,
+        quantity: 1,
+      ),
+      stockLimit: p.stock,
+    );
+    if (!ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('На складе только ${p.stock} шт. «${p.name}»')),
+      );
+      return;
+    }
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('«${p.name}» добавлен в корзину')));
+  }
+
   @override
   Widget build(BuildContext context) {
     final notifier = context.watch<ProductListNotifier>();
+    final auth = context.watch<AuthNotifier>();
+    final cart = context.watch<CartNotifier>();
     final categories = context.watch<CategoryListNotifier>().items;
     final brands = context.watch<BrandListNotifier>().result.items;
-    final auth = context.watch<AuthNotifier>();
     final q = notifier.query;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Каталог товаров'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go('/'),
+        ),
         actions: [
           if (auth.canPlaceOrder)
-            IconButton(
-              icon: const Icon(Icons.shopping_cart),
-              tooltip: 'Корзина',
-              onPressed: () => context.go('/cart'),
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.shopping_cart),
+                  tooltip: 'Корзина',
+                  onPressed: () => context.go('/cart'),
+                ),
+                if (cart.items.isNotEmpty)
+                  Positioned(
+                    right: 6,
+                    top: 6,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 16,
+                        minHeight: 16,
+                      ),
+                      child: Text(
+                        '${cart.items.length}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           if (auth.canViewOwnOrders)
             IconButton(
               icon: const Icon(Icons.receipt_long),
               tooltip: 'Мои заказы',
               onPressed: () => context.go('/orders/my'),
+            ),
+          if (auth.canUseLoyalty)
+            IconButton(
+              icon: const Icon(Icons.card_giftcard),
+              tooltip: 'Карта лояльности',
+              onPressed: () => context.go('/loyalty'),
             ),
           if (auth.canViewAllOrders)
             IconButton(
@@ -86,12 +154,18 @@ class _ProductListScreenState extends State<ProductListScreen> {
               tooltip: 'Модерация отзывов',
               onPressed: () => context.go('/reviews/moderation'),
             ),
-          if (auth.canManageCatalog)
+          if (auth.canManageCatalog) ...[
+            IconButton(
+              icon: const Icon(Icons.add),
+              tooltip: 'Добавить товар',
+              onPressed: () => context.go('/products/new'),
+            ),
             IconButton(
               icon: const Icon(Icons.admin_panel_settings),
               tooltip: 'Панель администратора',
               onPressed: () => context.go('/'),
             ),
+          ],
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Выйти',
@@ -112,7 +186,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
             onSearch: notifier.onSearchChanged,
             onApply: _go,
           ),
-          if (notifier.hasSelection)
+          if (notifier.hasSelection && auth.canManageCatalog)
             _SelectionBar(
               count: notifier.selected.length,
               onClear: notifier.toggleSelectAll,
@@ -133,7 +207,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
                         items: notifier.result.items,
                         idOf: (p) => p.id,
                         selected: notifier.selected,
-                        onToggleSelect: notifier.toggleSelection,
+                        onToggleSelect: auth.canManageCatalog
+                            ? notifier.toggleSelection
+                            : null,
                         sortField: q.sortField,
                         sortAscending: q.sortAscending,
                         onSort: (field) {
@@ -166,9 +242,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
                             label: 'Цена',
                             sortField: 'price',
                             numeric: true,
-                            build: (p) => Text(
-                              '${p.price.toStringAsFixed(0)} \u20BD',
-                            ),
+                            build: (p) =>
+                                Text('${p.price.toStringAsFixed(0)} \u20BD'),
                           ),
                           TableColumnSpec(
                             label: 'Остаток',
@@ -190,13 +265,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
                             const SizedBox(height: 4),
                             Text('Артикул: ${p.sku}'),
                             Text(
-                              'Год: ${p.year} \u2022 '
-                              'Размер: ${p.size} \u2022 '
-                              'Цвет: ${p.color}',
+                              'Год: ${p.year} \u2022 Размер: ${p.size} \u2022 Цвет: ${p.color}',
                             ),
                             Text(
-                              'Цена: ${p.price.toStringAsFixed(0)} \u20BD \u2022 '
-                              'Остаток: ${p.stock}',
+                              'Цена: ${p.price.toStringAsFixed(0)} \u20BD \u2022 Остаток: ${p.stock}',
                             ),
                             if (p.isDeleted)
                               const Text(
@@ -206,21 +278,27 @@ class _ProductListScreenState extends State<ProductListScreen> {
                           ],
                         ),
                         actions: (p) => [
-                          if (p.isDeleted)
-                            if (auth.canManageCatalog)
-                              IconButton(
-                                icon: const Icon(Icons.restore),
-                                tooltip: 'Восстановить',
-                                onPressed: () => notifier.restore(p.id),
-                              )
-                            else
-                              const SizedBox.shrink()
-                          else if (auth.canManageCatalog) ...[
+                          // Покупатель: добавить в корзину
+                          if (auth.canPlaceOrder)
+                            IconButton(
+                              icon: const Icon(Icons.add_shopping_cart),
+                              tooltip: 'В корзину',
+                              onPressed: () => _addToCart(p),
+                            ),
+                          // Администратор: восстановить удалённый
+                          if (p.isDeleted && auth.canManageCatalog)
+                            IconButton(
+                              icon: const Icon(Icons.restore),
+                              tooltip: 'Восстановить',
+                              onPressed: () => notifier.restore(p.id),
+                            ),
+                          // Администратор: редактировать / удалить
+                          if (!p.isDeleted && auth.canManageCatalog) ...[
                             IconButton(
                               icon: const Icon(Icons.edit),
                               tooltip: 'Редактировать',
                               onPressed: () =>
-                                  context.go('/admin/products/${p.id}/edit'),
+                                  context.go('/products/${p.id}/edit'),
                             ),
                             IconButton(
                               icon: const Icon(Icons.delete_outline),
@@ -234,18 +312,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                               onPressed: () =>
                                   _confirmHardDelete(context, notifier, p),
                             ),
-                          ] else
-                            IconButton(
-                              icon: const Icon(Icons.add_shopping_cart),
-                              tooltip: 'В корзину',
-                              onPressed: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('«${p.name}» добавлен в корзину'),
-                                  ),
-                                );
-                              },
-                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -322,10 +389,7 @@ class _FiltersPanel extends StatelessWidget {
                     child: Text('Все категории'),
                   ),
                   for (final c in categories)
-                    DropdownMenuItem<int?>(
-                      value: c.id,
-                      child: Text(c.name),
-                    ),
+                    DropdownMenuItem<int?>(value: c.id, child: Text(c.name)),
                 ],
                 onChanged: (v) => onApply(query.copyWith(categoryId: v)),
               ),
@@ -338,10 +402,7 @@ class _FiltersPanel extends StatelessWidget {
                     child: Text('Все бренды'),
                   ),
                   for (final b in brands)
-                    DropdownMenuItem<int?>(
-                      value: b.id,
-                      child: Text(b.name),
-                    ),
+                    DropdownMenuItem<int?>(value: b.id, child: Text(b.name)),
                 ],
                 onChanged: (v) => onApply(query.copyWith(brandId: v)),
               ),
@@ -357,10 +418,11 @@ class _FiltersPanel extends StatelessWidget {
                   keyboardType: TextInputType.number,
                   onFieldSubmitted: (v) {
                     final parsed = int.tryParse(v);
-                    onApply(query.copyWith(
-                      yearFrom:
-                          parsed ?? (v.isEmpty ? null : query.yearFrom),
-                    ));
+                    onApply(
+                      query.copyWith(
+                        yearFrom: parsed ?? (v.isEmpty ? null : query.yearFrom),
+                      ),
+                    );
                   },
                 ),
               ),
@@ -376,22 +438,13 @@ class _FiltersPanel extends StatelessWidget {
                   keyboardType: TextInputType.number,
                   onFieldSubmitted: (v) {
                     final parsed = int.tryParse(v);
-                    onApply(query.copyWith(
-                      yearTo: parsed ?? (v.isEmpty ? null : query.yearTo),
-                    ));
+                    onApply(
+                      query.copyWith(
+                        yearTo: parsed ?? (v.isEmpty ? null : query.yearTo),
+                      ),
+                    );
                   },
                 ),
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Checkbox(
-                    value: query.includeDeleted,
-                    onChanged: (v) =>
-                        onApply(query.copyWith(includeDeleted: v ?? false)),
-                  ),
-                  const Text('Показывать удалённые'),
-                ],
               ),
               TextButton.icon(
                 icon: const Icon(Icons.clear_all),
@@ -459,8 +512,9 @@ Future<void> _confirmSoftDelete(
     context: context,
     builder: (_) => AlertDialog(
       title: const Text('Логическое удаление'),
-      content:
-          Text('Поместить «${p.name}» в удалённые? Товар можно восстановить.'),
+      content: Text(
+        'Поместить «${p.name}» в удалённые? Товар можно восстановить.',
+      ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),

@@ -16,7 +16,7 @@ class ProductDetailScreen extends StatelessWidget {
         title: const Text('Карточка товара'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/products'),
+          onPressed: () => context.go('/'),
         ),
       ),
       body: FutureBuilder(
@@ -42,7 +42,8 @@ class ProductDetailScreen extends StatelessWidget {
               _row('Цена', '${p.price.toStringAsFixed(0)} ₽'),
               _row('Остаток', '${p.stock}'),
               _row('Год', '${p.year}'),
-              if (p.isDeleted) const Text('Удалён', style: TextStyle(color: Colors.red)),
+              if (p.isDeleted)
+                const Text('Удалён', style: TextStyle(color: Colors.red)),
             ],
           );
         },
@@ -51,12 +52,15 @@ class ProductDetailScreen extends StatelessWidget {
   }
 
   Widget _row(String k, String v) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Row(
-          children: [
-            SizedBox(width: 140, child: Text(k, style: const TextStyle(color: Colors.grey))),
-            Expanded(child: Text(v)),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Row(
+      children: [
+        SizedBox(
+          width: 140,
+          child: Text(k, style: const TextStyle(color: Colors.grey)),
         ),
-      );
+        Expanded(child: Text(v)),
+      ],
+    ),
+  );
 }

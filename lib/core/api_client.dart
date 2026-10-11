@@ -19,7 +19,6 @@ Dio buildDio(AuthNotifier? Function() authProvider) {
   dio.interceptors.add(
     InterceptorsWrapper(
       onRequest: (options, handler) {
-        options.queryParameters['__delay'] = 5000;
         final auth = authProvider.call();
         if (auth != null) {
           final token = auth.accessToken;
@@ -35,7 +34,8 @@ Dio buildDio(AuthNotifier? Function() authProvider) {
       onResponse: (response, handler) {
         if (kDebugMode) {
           debugPrint(
-              '[API] <- ${response.statusCode} ${response.requestOptions.uri}');
+            '[API] <- ${response.statusCode} ${response.requestOptions.uri}',
+          );
         }
         final status = response.statusCode ?? 0;
         if (status >= 400) {

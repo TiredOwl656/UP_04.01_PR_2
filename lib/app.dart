@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'models/app_user.dart';
+import 'models/brand_query.dart';
+import 'models/product_query.dart';
 import 'screens/audit_screen.dart';
 import 'screens/brand_form_screen.dart';
 import 'screens/brand_list_screen.dart';
@@ -26,6 +28,8 @@ import 'screens/supplier_form_screen.dart';
 import 'screens/supplier_list_screen.dart';
 import 'screens/users_screen.dart';
 import 'state/auth_notifier.dart';
+import 'state/brand_list_notifier.dart';
+import 'state/product_list_notifier.dart';
 import 'widgets/inactivity_watcher.dart';
 
 class LibraryApp extends StatefulWidget {
@@ -45,6 +49,22 @@ class _LibraryAppState extends State<LibraryApp> {
   }
 
   GoRouter _buildRouter(AuthNotifier auth) {
+    // Хелпер: продуктовый экран с применением query-параметров.
+    Widget productListScreen(BuildContext c, GoRouterState s) {
+      final q = ProductQuery.fromQueryParams(s.uri.queryParameters);
+      final notifier = c.read<ProductListNotifier>();
+      Future.microtask(() => notifier.applyQuery(q));
+      return const ProductListScreen();
+    }
+
+    // Хелпер: экран брендов с применением query-параметров.
+    Widget brandListScreen(BuildContext c, GoRouterState s) {
+      final q = BrandQuery.fromQueryParams(s.uri.queryParameters);
+      final notifier = c.read<BrandListNotifier>();
+      Future.microtask(() => notifier.applyQuery(q));
+      return const BrandListScreen();
+    }
+
     return GoRouter(
       refreshListenable: auth,
       initialLocation: '/',
@@ -81,22 +101,34 @@ class _LibraryAppState extends State<LibraryApp> {
           },
         ),
 
-        // Каталог — общий для всех залогиненных
+        // ---------- Каталог товаров ----------
         GoRoute(
           path: '/products',
-          builder: (c, s) => const ProductListScreen(),
+          builder: productListScreen,
           redirect: (c, s) => auth.canBrowseCatalog ? null : '/login',
           routes: [
+            GoRoute(
+              path: 'new',
+              builder: (c, s) => const ProductFormScreen(),
+              redirect: (c, s) => auth.canManageCatalog ? null : '/forbidden',
+            ),
             GoRoute(
               path: ':id',
               builder: (c, s) => ProductDetailScreen(
                 id: int.tryParse(s.pathParameters['id'] ?? '') ?? 0,
               ),
             ),
+            GoRoute(
+              path: ':id/edit',
+              builder: (c, s) => ProductFormScreen(
+                id: int.tryParse(s.pathParameters['id'] ?? ''),
+              ),
+              redirect: (c, s) => auth.canManageCatalog ? null : '/forbidden',
+            ),
           ],
         ),
 
-        // Покупатель
+        // ---------- Покупатель ----------
         GoRoute(
           path: '/cart',
           builder: (c, s) => const CartScreen(),
@@ -113,7 +145,7 @@ class _LibraryAppState extends State<LibraryApp> {
           redirect: (c, s) => auth.canUseLoyalty ? null : '/forbidden',
         ),
 
-        // Менеджер
+        // ---------- Менеджер ----------
         GoRoute(
           path: '/orders',
           builder: (c, s) => const OrdersScreen(),
@@ -125,10 +157,66 @@ class _LibraryAppState extends State<LibraryApp> {
           redirect: (c, s) => auth.canModerateReviews ? null : '/forbidden',
         ),
 
-        // Админ — каталог
+        // ---------- Бренды ----------
+        GoRoute(
+          path: '/brands',
+          builder: brandListScreen,
+          redirect: (c, s) => auth.canManageCatalog ? null : '/forbidden',
+        ),
+        GoRoute(
+          path: '/brands/new',
+          builder: (c, s) => const BrandFormScreen(),
+          redirect: (c, s) => auth.canManageCatalog ? null : '/forbidden',
+        ),
+        GoRoute(
+          path: '/brands/:id/edit',
+          builder: (c, s) =>
+              BrandFormScreen(id: int.tryParse(s.pathParameters['id'] ?? '')),
+          redirect: (c, s) => auth.canManageCatalog ? null : '/forbidden',
+        ),
+
+        // ---------- Категории ----------
+        GoRoute(
+          path: '/categories',
+          builder: (c, s) => const CategoryListScreen(),
+          redirect: (c, s) => auth.canManageCatalog ? null : '/forbidden',
+        ),
+        GoRoute(
+          path: '/categories/new',
+          builder: (c, s) => const CategoryFormScreen(),
+          redirect: (c, s) => auth.canManageCatalog ? null : '/forbidden',
+        ),
+        GoRoute(
+          path: '/categories/:id/edit',
+          builder: (c, s) => CategoryFormScreen(
+            id: int.tryParse(s.pathParameters['id'] ?? ''),
+          ),
+          redirect: (c, s) => auth.canManageCatalog ? null : '/forbidden',
+        ),
+
+        // ---------- Поставщики ----------
+        GoRoute(
+          path: '/suppliers',
+          builder: (c, s) => const SupplierListScreen(),
+          redirect: (c, s) => auth.canManageCatalog ? null : '/forbidden',
+        ),
+        GoRoute(
+          path: '/suppliers/new',
+          builder: (c, s) => const SupplierFormScreen(),
+          redirect: (c, s) => auth.canManageCatalog ? null : '/forbidden',
+        ),
+        GoRoute(
+          path: '/suppliers/:id/edit',
+          builder: (c, s) => SupplierFormScreen(
+            id: int.tryParse(s.pathParameters['id'] ?? ''),
+          ),
+          redirect: (c, s) => auth.canManageCatalog ? null : '/forbidden',
+        ),
+
+        // ---------- Админ-алиасы ----------
         GoRoute(
           path: '/admin/products',
-          builder: (c, s) => const ProductListScreen(),
+          builder: productListScreen,
           redirect: (c, s) => auth.canManageCatalog ? null : '/forbidden',
         ),
         GoRoute(
@@ -138,9 +226,24 @@ class _LibraryAppState extends State<LibraryApp> {
         ),
         GoRoute(
           path: '/admin/products/:id/edit',
-          builder: (c, s) => ProductFormScreen(
-            id: int.tryParse(s.pathParameters['id'] ?? ''),
-          ),
+          builder: (c, s) =>
+              ProductFormScreen(id: int.tryParse(s.pathParameters['id'] ?? '')),
+          redirect: (c, s) => auth.canManageCatalog ? null : '/forbidden',
+        ),
+        GoRoute(
+          path: '/admin/brands',
+          builder: brandListScreen,
+          redirect: (c, s) => auth.canManageCatalog ? null : '/forbidden',
+        ),
+        GoRoute(
+          path: '/admin/brands/new',
+          builder: (c, s) => const BrandFormScreen(),
+          redirect: (c, s) => auth.canManageCatalog ? null : '/forbidden',
+        ),
+        GoRoute(
+          path: '/admin/brands/:id/edit',
+          builder: (c, s) =>
+              BrandFormScreen(id: int.tryParse(s.pathParameters['id'] ?? '')),
           redirect: (c, s) => auth.canManageCatalog ? null : '/forbidden',
         ),
         GoRoute(
@@ -156,23 +259,6 @@ class _LibraryAppState extends State<LibraryApp> {
         GoRoute(
           path: '/admin/categories/:id/edit',
           builder: (c, s) => CategoryFormScreen(
-            id: int.tryParse(s.pathParameters['id'] ?? ''),
-          ),
-          redirect: (c, s) => auth.canManageCatalog ? null : '/forbidden',
-        ),
-        GoRoute(
-          path: '/admin/brands',
-          builder: (c, s) => const BrandListScreen(),
-          redirect: (c, s) => auth.canManageCatalog ? null : '/forbidden',
-        ),
-        GoRoute(
-          path: '/admin/brands/new',
-          builder: (c, s) => const BrandFormScreen(),
-          redirect: (c, s) => auth.canManageCatalog ? null : '/forbidden',
-        ),
-        GoRoute(
-          path: '/admin/brands/:id/edit',
-          builder: (c, s) => BrandFormScreen(
             id: int.tryParse(s.pathParameters['id'] ?? ''),
           ),
           redirect: (c, s) => auth.canManageCatalog ? null : '/forbidden',
@@ -194,8 +280,6 @@ class _LibraryAppState extends State<LibraryApp> {
           ),
           redirect: (c, s) => auth.canManageCatalog ? null : '/forbidden',
         ),
-
-        // Админ — люди и лог
         GoRoute(
           path: '/admin/users',
           builder: (c, s) => const UsersScreen(),
@@ -207,11 +291,7 @@ class _LibraryAppState extends State<LibraryApp> {
           redirect: (c, s) => auth.canViewAudit ? null : '/forbidden',
         ),
 
-        // Служебные
-        GoRoute(
-          path: '/forbidden',
-          builder: (c, s) => const ForbiddenScreen(),
-        ),
+        GoRoute(path: '/forbidden', builder: (c, s) => const ForbiddenScreen()),
       ],
       errorBuilder: (c, s) => Scaffold(
         appBar: AppBar(title: const Text('Не найдено')),

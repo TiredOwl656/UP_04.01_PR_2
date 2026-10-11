@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../core/api_exceptions.dart';
@@ -42,24 +43,32 @@ class _LoyaltyCardScreenState extends State<LoyaltyCardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final back = IconButton(
+      icon: const Icon(Icons.arrow_back),
+      onPressed: () => context.go('/'),
+    );
+
     if (_loading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return Scaffold(
+        appBar: AppBar(title: const Text('Карта лояльности'), leading: back),
+        body: const Center(child: CircularProgressIndicator()),
+      );
     }
     if (_error != null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Карта лояльности')),
+        appBar: AppBar(title: const Text('Карта лояльности'), leading: back),
         body: Center(child: Text(_error!)),
       );
     }
     if (_card == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Карта лояльности')),
+        appBar: AppBar(title: const Text('Карта лояльности'), leading: back),
         body: const Center(child: Text('У вас пока нет карты лояльности')),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Карта лояльности')),
+      appBar: AppBar(title: const Text('Карта лояльности'), leading: back),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Card(
@@ -69,20 +78,28 @@ class _LoyaltyCardScreenState extends State<LoyaltyCardScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Номер карты',
-                    style: TextStyle(color: Colors.grey)),
+                const Text(
+                  'Номер карты',
+                  style: TextStyle(color: Colors.grey),
+                ),
                 Text(
                   _card!.number,
                   style: const TextStyle(
-                      fontSize: 22, fontWeight: FontWeight.bold),
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 16),
-                const Text('Бонусные баллы',
-                    style: TextStyle(color: Colors.grey)),
+                const Text(
+                  'Бонусные баллы',
+                  style: TextStyle(color: Colors.grey),
+                ),
                 Text(
                   '${_card!.bonusPoints}',
                   style: const TextStyle(
-                      fontSize: 32, fontWeight: FontWeight.bold),
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),

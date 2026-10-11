@@ -54,7 +54,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
         title: const Text('Категории'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/products'),
+          onPressed: () => context.go('/'),
         ),
         actions: [
           IconButton(

@@ -1,6 +1,8 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
-import 'package:pr_2_clothing_store/core/api_exceptions.dart';
+
+import '../core/api_exceptions.dart';
 import '../models/page_result.dart';
 import '../models/product.dart';
 import '../models/product_query.dart';
@@ -10,7 +12,6 @@ enum LoadStatus { idle, loading, success, error }
 
 class ProductListNotifier extends ChangeNotifier {
   final ProductRepository _repository;
-
   ProductListNotifier(this._repository);
 
   ProductQuery _query = const ProductQuery();
@@ -45,19 +46,20 @@ class ProductListNotifier extends ChangeNotifier {
       _error = e.message;
       _status = LoadStatus.error;
     } catch (e) {
-      _error = 'Не удалось загрузить список: $e';
+      _error = 'Не удалось загрузить список товаров: $e';
       _status = LoadStatus.error;
     }
     notifyListeners();
   }
 
   Future<void> applyQuery(ProductQuery next) async {
+    // Если запрос не изменился — не дёргаем сеть повторно.
+    if (_query == next) return;
     _query = next;
     _selected.clear();
     await load();
   }
 
-  /// Пункт 17: поиск с задержкой 300 мс, страница сбрасывается на 1.
   void onSearchChanged(String value) {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () {
