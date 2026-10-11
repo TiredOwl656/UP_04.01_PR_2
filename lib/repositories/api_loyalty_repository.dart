@@ -8,8 +8,8 @@ class ApiLoyaltyRepository {
   ApiLoyaltyRepository(this._dio);
 
   Future<LoyaltyCard?> myCard() => guard(() async {
-        final r = await _dio.get('/loyalty/my');
-        if (r.data == null) return null;
-        return LoyaltyCard.fromJson((r.data as Map).cast<String, dynamic>());
-      });
+    final r = await _dio.get('/loyalty/my');
+    if (r.data == null) return null;
+    return LoyaltyCard.fromJson((r.data as Map).cast<String, dynamic>());
+  });
 }

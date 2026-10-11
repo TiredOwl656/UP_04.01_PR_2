@@ -38,12 +38,12 @@ class BrandQuery {
   BrandQuery withPage(int p) => copyWith(page: p);
 
   Map<String, String> toQueryParams() => {
-        if (search.isNotEmpty) 'search': search,
-        'sort': '$sortField,${sortAscending ? "asc" : "desc"}',
-        'page': '$page',
-        'size': '$size',
-        if (includeDeleted) 'includeDeleted': 'true',
-      };
+    if (search.isNotEmpty) 'search': search,
+    'sort': '$sortField,${sortAscending ? "asc" : "desc"}',
+    'page': '$page',
+    'size': '$size',
+    if (includeDeleted) 'includeDeleted': 'true',
+  };
 
   factory BrandQuery.fromQueryParams(Map<String, String> q) {
     String? s(String k) => q[k];

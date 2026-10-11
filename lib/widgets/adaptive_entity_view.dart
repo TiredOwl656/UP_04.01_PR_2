@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'entity_table.dart';
 import 'entity_cards.dart';
 
@@ -44,7 +45,10 @@ class AdaptiveEntityView<T> extends StatelessWidget {
           children: [
             cardBuilder(item),
             if (actions != null)
-              Row(mainAxisAlignment: MainAxisAlignment.end, children: actions!(item)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: actions!(item),
+              ),
           ],
         ),
       );

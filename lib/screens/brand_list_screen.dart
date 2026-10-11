@@ -50,15 +50,18 @@ class _BrandListScreenState extends State<BrandListScreen> {
       if (!mounted) return;
       await showDialog<void>(
         context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('Удаление невозможно'),
-          content: Text(e.message),
-          actions: [
-            FilledButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Понятно'),
-            ),
-          ],
+        builder: (_) => ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: AlertDialog(
+            title: const Text('Удаление невозможно'),
+            content: Text(e.message),
+            actions: [
+              FilledButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Понятно'),
+              ),
+            ],
+          ),
         ),
       );
     } on ApiException catch (e) {

@@ -8,6 +8,7 @@ class AdaptiveNavItem {
   final IconData icon;
   final String label;
   final String route;
+
   const AdaptiveNavItem(this.icon, this.label, this.route);
 }
 
@@ -30,7 +31,7 @@ class AdaptiveScaffold extends StatelessWidget {
 
     final logout = IconButton(
       icon: const Icon(Icons.logout),
-      tooltip: '\u0412\u044b\u0439\u0442\u0438',
+      tooltip: 'Выйти',
       onPressed: () async {
         await context.read<AuthNotifier>().logout();
         if (context.mounted) context.go('/login');
@@ -54,10 +55,12 @@ class AdaptiveScaffold extends StatelessWidget {
               onDestinationSelected: (i) => context.go(items[i].route),
               labelType: NavigationRailLabelType.all,
               destinations: items
-                  .map((it) => NavigationRailDestination(
-                        icon: Icon(it.icon),
-                        label: Text(it.label),
-                      ))
+                  .map(
+                    (it) => NavigationRailDestination(
+                      icon: Icon(it.icon),
+                      label: Text(it.label),
+                    ),
+                  )
                   .toList(),
             ),
             const VerticalDivider(width: 1),
@@ -76,10 +79,12 @@ class AdaptiveScaffold extends StatelessWidget {
               type: BottomNavigationBarType.fixed,
               onTap: (i) => context.go(items[i].route),
               items: items
-                  .map((it) => BottomNavigationBarItem(
-                        icon: Icon(it.icon),
-                        label: it.label,
-                      ))
+                  .map(
+                    (it) => BottomNavigationBarItem(
+                      icon: Icon(it.icon),
+                      label: it.label,
+                    ),
+                  )
                   .toList(),
             ),
     );

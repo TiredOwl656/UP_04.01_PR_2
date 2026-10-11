@@ -12,15 +12,18 @@ class InMemoryProductRepository implements ProductRepository {
   Future<PageResult<Product>> find(ProductQuery q) async {
     await Future.delayed(const Duration(milliseconds: 250));
 
-    var rows =
-        _products.where((p) => q.includeDeleted || !p.isDeleted).toList();
+    var rows = _products
+        .where((p) => q.includeDeleted || !p.isDeleted)
+        .toList();
 
     if (q.search.trim().isNotEmpty) {
       final needle = q.search.trim().toLowerCase();
       rows = rows
-          .where((p) =>
-              p.name.toLowerCase().contains(needle) ||
-              p.sku.toLowerCase().contains(needle))
+          .where(
+            (p) =>
+                p.name.toLowerCase().contains(needle) ||
+                p.sku.toLowerCase().contains(needle),
+          )
           .toList();
     }
 

@@ -76,19 +76,22 @@ class _EntityFormState extends State<EntityForm> {
     if (!_dirty) return true;
     final ok = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Несохранённые изменения'),
-        content: const Text('Уйти без сохранения?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Остаться'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Уйти'),
-          ),
-        ],
+      builder: (_) => ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480),
+        child: AlertDialog(
+          title: const Text('Несохранённые изменения'),
+          content: const Text('Уйти без сохранения?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Остаться'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Уйти'),
+            ),
+          ],
+        ),
       ),
     );
     return ok ?? false;
@@ -143,46 +146,51 @@ class _EntityFormState extends State<EntityForm> {
         body: Form(
           key: _formKey,
           autovalidateMode: AutovalidateMode.onUserInteraction,
-          child: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              if (widget.beforeFields != null) ...[
-                widget.beforeFields!,
-                const SizedBox(height: 16),
-              ],
-              for (final f in widget.fields) ...[
-                TextFormField(
-                  controller: _controllers[f.key],
-                  decoration: InputDecoration(
-                    labelText: f.label,
-                    border: const OutlineInputBorder(),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 720),
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  if (widget.beforeFields != null) ...[
+                    widget.beforeFields!,
+                    const SizedBox(height: 16),
+                  ],
+                  for (final f in widget.fields) ...[
+                    TextFormField(
+                      controller: _controllers[f.key],
+                      decoration: InputDecoration(
+                        labelText: f.label,
+                        border: const OutlineInputBorder(),
+                      ),
+                      keyboardType: f.keyboardType,
+                      validator: (v) {
+                        final server = _serverErrors[f.key];
+                        if (server != null) return server;
+                        return f.validator?.call(v);
+                      },
+                      obscureText: f.obscureText,
+                      maxLines: f.maxLines,
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  if (widget.afterFields != null) ...[
+                    widget.afterFields!,
+                    const SizedBox(height: 16),
+                  ],
+                  FilledButton(
+                    onPressed: _submitting ? null : _submit,
+                    child: _submitting
+                        ? const SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(widget.submitLabel),
                   ),
-                  keyboardType: f.keyboardType,
-                  validator: (v) {
-                    final server = _serverErrors[f.key];
-                    if (server != null) return server;
-                    return f.validator?.call(v);
-                  },
-                  obscureText: f.obscureText,
-                  maxLines: f.maxLines,
-                ),
-                const SizedBox(height: 12),
-              ],
-              if (widget.afterFields != null) ...[
-                widget.afterFields!,
-                const SizedBox(height: 16),
-              ],
-              FilledButton(
-                onPressed: _submitting ? null : _submit,
-                child: _submitting
-                    ? const SizedBox(
-                        height: 18,
-                        width: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(widget.submitLabel),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

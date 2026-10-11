@@ -26,9 +26,7 @@ class EntityCards<T> extends StatelessWidget {
         final isSelected = selected.contains(idOf(item));
         return Card(
           margin: EdgeInsets.zero,
-          color: isSelected
-              ? Colors.blue.withValues(alpha: 0.08)
-              : null,
+          color: isSelected ? Colors.blue.withValues(alpha: 0.08) : null,
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Row(

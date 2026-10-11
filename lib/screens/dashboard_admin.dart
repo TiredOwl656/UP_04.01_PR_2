@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../state/auth_notifier.dart';
+import '../widgets/adaptive_scaffold.dart';
 
 class AdminDashboard extends StatelessWidget {
   const AdminDashboard({super.key});
@@ -11,25 +12,21 @@ class AdminDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthNotifier>();
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Администратор — ${auth.user?.fullName ?? ""}'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Выйти',
-            onPressed: () async {
-              await context.read<AuthNotifier>().logout();
-              if (context.mounted) context.go('/login');
-            },
-          ),
-        ],
-      ),
+    return AdaptiveScaffold(
+      title: 'Администратор — ${auth.user?.fullName ?? ""}',
+      items: const [
+        AdaptiveNavItem(Icons.inventory_2, 'Товары', '/admin/products'),
+        AdaptiveNavItem(Icons.category, 'Категории', '/admin/categories'),
+        AdaptiveNavItem(Icons.storefront, 'Бренды', '/admin/brands'),
+        AdaptiveNavItem(Icons.manage_accounts, 'Пользователи', '/admin/users'),
+      ],
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text('Панель администратора',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          const Text(
+            'Панель администратора',
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 16),
           Card(
             child: ListTile(

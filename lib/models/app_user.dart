@@ -7,10 +7,10 @@ enum Role {
   const Role(this.label);
 
   static Role fromName(String name) => switch (name) {
-        'admin' => Role.admin,
-        'manager' => Role.manager,
-        _ => Role.customer,
-      };
+    'admin' => Role.admin,
+    'manager' => Role.manager,
+    _ => Role.customer,
+  };
 }
 
 class AppUser {
@@ -27,16 +27,16 @@ class AppUser {
   });
 
   factory AppUser.fromJson(Map<String, dynamic> json) => AppUser(
-        id: json['id'] as int? ?? 0,
-        username: json['username'] as String? ?? '',
-        fullName: json['fullName'] as String? ?? '',
-        role: Role.fromName(json['role'] as String? ?? 'customer'),
-      );
+    id: json['id'] as int? ?? 0,
+    username: json['username'] as String? ?? '',
+    fullName: json['fullName'] as String? ?? '',
+    role: Role.fromName(json['role'] as String? ?? 'customer'),
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'username': username,
-        'fullName': fullName,
-        'role': role.name,
-      };
+    'id': id,
+    'username': username,
+    'fullName': fullName,
+    'role': role.name,
+  };
 }

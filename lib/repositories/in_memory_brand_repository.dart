@@ -17,16 +17,17 @@ class InMemoryBrandRepository implements BrandRepository {
     if (q.search.trim().isNotEmpty) {
       final needle = q.search.trim().toLowerCase();
       rows = rows
-          .where((b) =>
-              b.name.toLowerCase().contains(needle) ||
-              b.country.toLowerCase().contains(needle))
+          .where(
+            (b) =>
+                b.name.toLowerCase().contains(needle) ||
+                b.country.toLowerCase().contains(needle),
+          )
           .toList();
     }
 
     rows.sort((a, b) {
       final r = switch (q.sortField) {
-        'country' =>
-          a.country.toLowerCase().compareTo(b.country.toLowerCase()),
+        'country' => a.country.toLowerCase().compareTo(b.country.toLowerCase()),
         'founded' => a.foundedYear.compareTo(b.foundedYear),
         _ => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
       };

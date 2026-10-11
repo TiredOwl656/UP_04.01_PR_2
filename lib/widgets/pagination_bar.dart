@@ -32,23 +32,31 @@ class PaginationBar extends StatelessWidget {
           ),
           IconButton(
             icon: const Icon(Icons.chevron_left),
-            onPressed: page > 1 && onPage != null ? () => onPage!(page - 1) : null,
+            onPressed: page > 1 && onPage != null
+                ? () => onPage!(page - 1)
+                : null,
           ),
           Text('Страница $page из $totalPages'),
           IconButton(
             icon: const Icon(Icons.chevron_right),
-            onPressed: page < totalPages && onPage != null ? () => onPage!(page + 1) : null,
+            onPressed: page < totalPages && onPage != null
+                ? () => onPage!(page + 1)
+                : null,
           ),
           IconButton(
             icon: const Icon(Icons.last_page),
-            onPressed: page < totalPages && onPage != null ? () => onPage!(totalPages) : null,
+            onPressed: page < totalPages && onPage != null
+                ? () => onPage!(totalPages)
+                : null,
           ),
           const SizedBox(width: 16),
           Text('Всего: $total'),
           const SizedBox(width: 16),
           DropdownButton<int>(
             value: size,
-            onChanged: onSize == null ? null : (v) => v != null ? onSize!(v) : null,
+            onChanged: onSize == null
+                ? null
+                : (v) => v != null ? onSize!(v) : null,
             items: const [
               DropdownMenuItem(value: 10, child: Text('10 / стр.')),
               DropdownMenuItem(value: 25, child: Text('25 / стр.')),

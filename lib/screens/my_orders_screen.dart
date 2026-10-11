@@ -65,9 +65,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
       );
     }
     if (_orders == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     if (_orders!.isEmpty) {
       return Scaffold(

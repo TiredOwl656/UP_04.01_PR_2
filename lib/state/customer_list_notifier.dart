@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:pr_2_clothing_store/core/api_exceptions.dart';
+
 import '../models/customer.dart';
 import '../repositories/customer_repository.dart';
 import 'product_list_notifier.dart' show LoadStatus;

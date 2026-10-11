@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../core/api_exceptions.dart';
 import '../state/supplier_list_notifier.dart';
 import '../widgets/state_views.dart';
-import '../core/api_exceptions.dart';
 
 class SupplierListScreen extends StatefulWidget {
   const SupplierListScreen({super.key});
@@ -24,15 +24,18 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
       if (!mounted) return;
       await showDialog<void>(
         context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('РЈРґР°Р»РµРЅРёРµ РЅРµРІРѕР·РјРѕР¶РЅРѕ'),
-          content: Text(e.message),
-          actions: [
-            FilledButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('РџРѕРЅСЏС‚РЅРѕ'),
-            ),
-          ],
+        builder: (_) => ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: AlertDialog(
+            title: const Text('Удаление невозможно'),
+            content: Text(e.message),
+            actions: [
+              FilledButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Понятно'),
+              ),
+            ],
+          ),
         ),
       );
     } on ApiException catch (e) {
@@ -51,7 +54,7 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('РџРѕСЃС‚Р°РІС‰РёРєРё'),
+        title: const Text('Поставщики'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go('/'),
@@ -59,17 +62,24 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
+            tooltip: 'Добавить поставщика',
             onPressed: () => context.go('/suppliers/new'),
           ),
         ],
       ),
       body: Column(
         children: [
-          CheckboxListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-            title: const Text('РџРѕРєР°Р·С‹РІР°С‚СЊ СѓРґР°Р»С‘РЅРЅС‹Рµ'),
-            value: _showDeleted,
-            onChanged: (v) => setState(() => _showDeleted = v ?? false),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              children: [
+                Checkbox(
+                  value: _showDeleted,
+                  onChanged: (v) => setState(() => _showDeleted = v ?? false),
+                ),
+                const Text('Показывать удалённых'),
+              ],
+            ),
           ),
           const Divider(height: 1),
           Expanded(
@@ -78,48 +88,59 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
               isEmpty: items.isEmpty,
               error: n.error,
               onRetry: n.load,
-              onData: () => ListView.separated(
-                padding: const EdgeInsets.all(12),
-                itemCount: items.length,
-                separatorBuilder: (_, _) => const Divider(),
-                itemBuilder: (context, i) {
-                  final s = items[i];
-                  final deleted = s.isDeleted;
-                  return ListTile(
-                    title: Text(
-                      s.name,
-                      style: deleted
-                          ? const TextStyle(
-                              color: Colors.red,
-                              decoration: TextDecoration.lineThrough,
-                            )
-                          : null,
-                    ),
-                    subtitle: Text('${s.country} вЂў ${s.email} вЂў ${s.phone}'),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (deleted)
-                          IconButton(
-                            icon: const Icon(Icons.restore),
-                            tooltip: 'Р’РѕСЃСЃС‚Р°РЅРѕРІРёС‚СЊ',
-                            onPressed: () => n.restore(s.id),
-                          )
-                        else ...[
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () =>
-                                context.go('/suppliers/${s.id}/edit'),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline),
-                            onPressed: () => _tryDelete(s.id, s.name),
-                          ),
-                        ],
-                      ],
-                    ),
-                  );
-                },
+              onData: () => Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1400),
+                  child: ListView.separated(
+                    padding: const EdgeInsets.all(12),
+                    itemCount: items.length,
+                    separatorBuilder: (_, _) => const Divider(),
+                    itemBuilder: (context, i) {
+                      final s = items[i];
+                      final deleted = s.isDeleted;
+                      return ListTile(
+                        title: Text(
+                          s.name,
+                          overflow: TextOverflow.ellipsis,
+                          style: deleted
+                              ? const TextStyle(
+                                  color: Colors.red,
+                                  decoration: TextDecoration.lineThrough,
+                                )
+                              : null,
+                        ),
+                        subtitle: Text(
+                          '${s.country} • ${s.email} • ${s.phone}',
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (deleted)
+                              IconButton(
+                                icon: const Icon(Icons.restore),
+                                tooltip: 'Восстановить',
+                                onPressed: () => n.restore(s.id),
+                              )
+                            else ...[
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                tooltip: 'Редактировать',
+                                onPressed: () =>
+                                    context.go('/suppliers/${s.id}/edit'),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline),
+                                tooltip: 'Удалить',
+                                onPressed: () => _tryDelete(s.id, s.name),
+                              ),
+                            ],
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
           ),

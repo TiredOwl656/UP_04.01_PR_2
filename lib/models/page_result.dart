@@ -16,9 +16,5 @@ class PageResult<T> {
   bool get hasNext => page < totalPages;
   bool get isEmpty => items.isEmpty;
 
-  PageResult.empty()
-      : items = <T>[],
-        page = 1,
-        size = 10,
-        total = 0;
+  PageResult.empty() : items = <T>[], page = 1, size = 10, total = 0;
 }

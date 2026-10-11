@@ -35,8 +35,6 @@ Future<void> main() async {
   usePathUrlStrategy();
   final prefs = await SharedPreferences.getInstance();
 
-  // AuthNotifier нужен и Dio, и провайдерам. Создаём его первым,
-  // а Dio получает ленивый доступ через замыкание.
   late AuthNotifier authNotifier;
   final dio = buildDio(() => authNotifier);
   final authApi = AuthApi(dio);
@@ -52,15 +50,20 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => CartNotifier()),
 
         Provider<ProductRepository>(
-            create: (c) => ApiProductRepository(c.read<Dio>())),
+          create: (c) => ApiProductRepository(c.read<Dio>()),
+        ),
         Provider<BrandRepository>(
-            create: (c) => ApiBrandRepository(c.read<Dio>())),
+          create: (c) => ApiBrandRepository(c.read<Dio>()),
+        ),
         Provider<CategoryRepository>(
-            create: (c) => ApiCategoryRepository(c.read<Dio>())),
+          create: (c) => ApiCategoryRepository(c.read<Dio>()),
+        ),
         Provider<SupplierRepository>(
-            create: (c) => ApiSupplierRepository(c.read<Dio>())),
+          create: (c) => ApiSupplierRepository(c.read<Dio>()),
+        ),
         Provider<CustomerRepository>(
-            create: (c) => ApiCustomerRepository(c.read<Dio>())),
+          create: (c) => ApiCustomerRepository(c.read<Dio>()),
+        ),
 
         Provider(create: (c) => ApiOrderRepository(c.read<Dio>())),
         Provider(create: (c) => ApiReviewRepository(c.read<Dio>())),
@@ -69,15 +72,24 @@ Future<void> main() async {
         Provider(create: (c) => ApiLoyaltyRepository(c.read<Dio>())),
 
         ChangeNotifierProvider(
-            create: (c) => ProductListNotifier(c.read<ProductRepository>())..load()),
+          create: (c) =>
+              ProductListNotifier(c.read<ProductRepository>())..load(),
+        ),
         ChangeNotifierProvider(
-            create: (c) => BrandListNotifier(c.read<BrandRepository>())..load()),
+          create: (c) => BrandListNotifier(c.read<BrandRepository>())..load(),
+        ),
         ChangeNotifierProvider(
-            create: (c) => CategoryListNotifier(c.read<CategoryRepository>())..load()),
+          create: (c) =>
+              CategoryListNotifier(c.read<CategoryRepository>())..load(),
+        ),
         ChangeNotifierProvider(
-            create: (c) => SupplierListNotifier(c.read<SupplierRepository>())..load()),
+          create: (c) =>
+              SupplierListNotifier(c.read<SupplierRepository>())..load(),
+        ),
         ChangeNotifierProvider(
-            create: (c) => CustomerListNotifier(c.read<CustomerRepository>())..load()),
+          create: (c) =>
+              CustomerListNotifier(c.read<CustomerRepository>())..load(),
+        ),
       ],
       child: const LibraryApp(),
     ),

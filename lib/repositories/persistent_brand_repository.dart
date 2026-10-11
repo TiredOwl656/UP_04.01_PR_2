@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/seed_data.dart';
@@ -31,8 +32,9 @@ class PersistentBrandRepository implements BrandRepository {
       final list = jsonDecode(raw) as List;
       _brands
         ..clear()
-        ..addAll(list.map(
-            (e) => Brand.fromJson((e as Map).cast<String, dynamic>())));
+        ..addAll(
+          list.map((e) => Brand.fromJson((e as Map).cast<String, dynamic>())),
+        );
       _nextId = _brands.isEmpty
           ? 1
           : _brands.map((b) => b.id).reduce((a, b) => a > b ? a : b) + 1;
@@ -61,16 +63,17 @@ class PersistentBrandRepository implements BrandRepository {
     if (q.search.trim().isNotEmpty) {
       final needle = q.search.trim().toLowerCase();
       rows = rows
-          .where((b) =>
-              b.name.toLowerCase().contains(needle) ||
-              b.country.toLowerCase().contains(needle))
+          .where(
+            (b) =>
+                b.name.toLowerCase().contains(needle) ||
+                b.country.toLowerCase().contains(needle),
+          )
           .toList();
     }
 
     rows.sort((a, b) {
       final r = switch (q.sortField) {
-        'country' =>
-          a.country.toLowerCase().compareTo(b.country.toLowerCase()),
+        'country' => a.country.toLowerCase().compareTo(b.country.toLowerCase()),
         'founded' => a.foundedYear.compareTo(b.foundedYear),
         _ => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
       };

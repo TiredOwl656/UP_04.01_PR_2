@@ -1,6 +1,8 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:pr_2_clothing_store/core/api_exceptions.dart';
+
 import '../models/brand.dart';
 import '../models/brand_query.dart';
 import '../models/page_result.dart';

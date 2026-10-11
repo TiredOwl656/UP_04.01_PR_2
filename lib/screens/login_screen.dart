@@ -36,9 +36,9 @@ class _LoginScreenState extends State<LoginScreen> {
     });
     try {
       await context.read<AuthNotifier>().login(
-            _username.text.trim(),
-            _password.text,
-          );
+        _username.text.trim(),
+        _password.text,
+      );
       if (!mounted) return;
       context.go(widget.from ?? '/');
     } on UnauthorizedException catch (e) {
@@ -83,8 +83,10 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             if (_serverError != null) ...[
               const SizedBox(height: 12),
-              Text(_serverError!,
-                  style: const TextStyle(color: Colors.red, fontSize: 14)),
+              Text(
+                _serverError!,
+                style: const TextStyle(color: Colors.red, fontSize: 14),
+              ),
             ],
             const SizedBox(height: 20),
             FilledButton(

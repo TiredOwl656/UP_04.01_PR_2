@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/seed_data.dart';
@@ -29,8 +30,11 @@ class PersistentSupplierRepository implements SupplierRepository {
       final list = jsonDecode(raw) as List;
       _suppliers
         ..clear()
-        ..addAll(list.map(
-            (e) => Supplier.fromJson((e as Map).cast<String, dynamic>())));
+        ..addAll(
+          list.map(
+            (e) => Supplier.fromJson((e as Map).cast<String, dynamic>()),
+          ),
+        );
       _nextId = _suppliers.isEmpty
           ? 1
           : _suppliers.map((s) => s.id).reduce((a, b) => a > b ? a : b) + 1;

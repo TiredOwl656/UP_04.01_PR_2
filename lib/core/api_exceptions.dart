@@ -10,7 +10,9 @@ sealed class ApiException implements Exception {
 }
 
 class NetworkException extends ApiException {
-  const NetworkException([super.message = 'Сервер недоступен. Проверьте соединение.']);
+  const NetworkException([
+    super.message = 'Сервер недоступен. Проверьте соединение.',
+  ]);
 }
 
 class UnauthorizedException extends ApiException {
@@ -18,7 +20,9 @@ class UnauthorizedException extends ApiException {
 }
 
 class ForbiddenException extends ApiException {
-  const ForbiddenException([super.message = 'Недостаточно прав для этого действия.']);
+  const ForbiddenException([
+    super.message = 'Недостаточно прав для этого действия.',
+  ]);
 }
 
 class NotFoundException extends ApiException {
@@ -35,7 +39,9 @@ class ValidationException extends ApiException {
 }
 
 class ServerException extends ApiException {
-  const ServerException([super.message = 'Ошибка на сервере. Попробуйте позже.']);
+  const ServerException([
+    super.message = 'Ошибка на сервере. Попробуйте позже.',
+  ]);
 }
 
 ApiException mapHttpError(int status, dynamic body) {
@@ -46,16 +52,16 @@ ApiException mapHttpError(int status, dynamic body) {
   return switch (status) {
     401 => UnauthorizedException(message ?? 'Требуется вход в систему.'),
     403 => ForbiddenException(
-        message ?? 'Недостаточно прав для этого действия.'),
+      message ?? 'Недостаточно прав для этого действия.',
+    ),
     404 => NotFoundException(message ?? 'Запись не найдена.'),
     409 => ConflictException(message ?? 'Операция невозможна.'),
     422 => ValidationException(
-        message ?? 'Ошибка валидации',
-        (body is Map && body['errors'] is Map)
-            ? (body['errors'] as Map)
-                .map((k, v) => MapEntry('$k', '$v'))
-            : const {},
-      ),
+      message ?? 'Ошибка валидации',
+      (body is Map && body['errors'] is Map)
+          ? (body['errors'] as Map).map((k, v) => MapEntry('$k', '$v'))
+          : const {},
+    ),
     _ => ServerException(message ?? 'Неизвестная ошибка (код $status).'),
   };
 }
@@ -67,12 +73,13 @@ ApiException mapDioError(DioException e) {
   return switch (e.type) {
     DioExceptionType.connectionTimeout ||
     DioExceptionType.sendTimeout ||
-    DioExceptionType.receiveTimeout =>
-      const NetworkException('Сервер не ответил вовремя.'),
+    DioExceptionType.receiveTimeout => const NetworkException(
+      'Сервер не ответил вовремя.',
+    ),
     DioExceptionType.connectionError => const NetworkException(
-        'Не удалось соединиться с сервером. '
-        'Повторите попытку позже',
-      ),
+      'Не удалось соединиться с сервером. '
+      'Повторите попытку позже',
+    ),
     DioExceptionType.cancel => const NetworkException('Запрос отменён.'),
     _ => const ServerException(),
   };
@@ -83,7 +90,9 @@ Future<T> guard<T>(Future<T> Function() action) async {
     return await action();
   } on DioException catch (e) {
     if (kDebugMode) {
-      debugPrint('[API] ошибка ${e.requestOptions.uri}: ${e.type} / ${e.message}');
+      debugPrint(
+        '[API] ошибка ${e.requestOptions.uri}: ${e.type} / ${e.message}',
+      );
     }
     throw mapDioError(e);
   }

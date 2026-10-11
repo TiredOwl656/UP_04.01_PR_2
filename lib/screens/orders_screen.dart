@@ -87,14 +87,19 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     onSelected: (s) => _setStatus(o.id, s),
                     itemBuilder: (_) => const [
                       PopupMenuItem(
-                          value: 'confirmed', child: Text('Подтвердить')),
+                        value: 'confirmed',
+                        child: Text('Подтвердить'),
+                      ),
                       PopupMenuItem(value: 'packed', child: Text('Собрать')),
+                      PopupMenuItem(value: 'shipped', child: Text('Отправить')),
                       PopupMenuItem(
-                          value: 'shipped', child: Text('Отправить')),
+                        value: 'delivered',
+                        child: Text('Доставлен'),
+                      ),
                       PopupMenuItem(
-                          value: 'delivered', child: Text('Доставлен')),
-                      PopupMenuItem(
-                          value: 'cancelled', child: Text('Отменить')),
+                        value: 'cancelled',
+                        child: Text('Отменить'),
+                      ),
                     ],
                   ),
                 );

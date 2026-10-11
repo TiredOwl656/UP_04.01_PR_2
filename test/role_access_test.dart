@@ -21,7 +21,7 @@ void main() {
     role: Role.admin,
   );
 
-  group('Разграничение прав по ролям', () {
+  group('Разграничение прав', () {
     test('customer может оформлять заказ', () {
       expect(customer.role == Role.customer, true);
       expect(customer.role == Role.manager, false);
@@ -45,7 +45,7 @@ void main() {
       expect(admin.role == Role.manager, false);
     });
 
-    test('только customer использует корзину и лояльность', () {
+    test('только customer использует корзину', () {
       expect(customer.role == Role.customer, true);
       expect(manager.role == Role.customer, false);
       expect(admin.role == Role.customer, false);

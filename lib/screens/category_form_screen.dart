@@ -43,9 +43,7 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
     }
 
     return EntityForm(
-      title: widget.isEditing
-          ? 'Редактирование категории'
-          : 'Новая категория',
+      title: widget.isEditing ? 'Редактирование категории' : 'Новая категория',
       submitLabel: widget.isEditing ? 'Сохранить' : 'Создать',
       fields: [
         FormFieldSpec(

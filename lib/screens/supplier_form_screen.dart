@@ -43,9 +43,7 @@ class _SupplierFormScreenState extends State<SupplierFormScreen> {
     }
 
     return EntityForm(
-      title: widget.isEditing
-          ? 'Редактирование поставщика'
-          : 'Новый поставщик',
+      title: widget.isEditing ? 'Редактирование поставщика' : 'Новый поставщик',
       submitLabel: widget.isEditing ? 'Сохранить' : 'Создать',
       fields: [
         FormFieldSpec(
@@ -72,20 +70,14 @@ class _SupplierFormScreenState extends State<SupplierFormScreen> {
           label: 'Email',
           initialValue: _existing?.email ?? '',
           keyboardType: TextInputType.emailAddress,
-          validator: V.compose([
-            V.required('Email'),
-            V.email(),
-          ]),
+          validator: V.compose([V.required('Email'), V.email()]),
         ),
         FormFieldSpec(
           key: 'phone',
           label: 'Телефон',
           initialValue: _existing?.phone ?? '',
           keyboardType: TextInputType.phone,
-          validator: V.compose([
-            V.required('Телефон'),
-            V.phone(),
-          ]),
+          validator: V.compose([V.required('Телефон'), V.phone()]),
         ),
       ],
       onSubmit: (values) async {

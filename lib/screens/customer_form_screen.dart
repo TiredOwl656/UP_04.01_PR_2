@@ -59,8 +59,9 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
     }
 
     return EntityForm(
-      title:
-          widget.isEditing ? 'Редактирование покупателя' : 'Новый покупатель',
+      title: widget.isEditing
+          ? 'Редактирование покупателя'
+          : 'Новый покупатель',
       submitLabel: widget.isEditing ? 'Сохранить' : 'Создать',
       fields: [
         FormFieldSpec(
@@ -78,20 +79,14 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
           label: 'Email',
           initialValue: _existing?.email ?? '',
           keyboardType: TextInputType.emailAddress,
-          validator: V.compose([
-            V.required('Email'),
-            V.email(),
-          ]),
+          validator: V.compose([V.required('Email'), V.email()]),
         ),
         FormFieldSpec(
           key: 'phone',
           label: 'Телефон',
           initialValue: _existing?.phone ?? '',
           keyboardType: TextInputType.phone,
-          validator: V.compose([
-            V.required('Телефон'),
-            V.phone(),
-          ]),
+          validator: V.compose([V.required('Телефон'), V.phone()]),
         ),
       ],
       afterFields: Column(

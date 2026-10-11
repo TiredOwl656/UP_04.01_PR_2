@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../state/auth_notifier.dart';
+import '../widgets/adaptive_scaffold.dart';
 
 class CustomerDashboard extends StatelessWidget {
   const CustomerDashboard({super.key});
@@ -11,25 +12,21 @@ class CustomerDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthNotifier>();
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Магазин — ${auth.user?.fullName ?? ""}'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Выйти',
-            onPressed: () async {
-              await context.read<AuthNotifier>().logout();
-              if (context.mounted) context.go('/login');
-            },
-          ),
-        ],
-      ),
+    return AdaptiveScaffold(
+      title: 'Магазин — ${auth.user?.fullName ?? ""}',
+      items: const [
+        AdaptiveNavItem(Icons.store, 'Каталог', '/products'),
+        AdaptiveNavItem(Icons.shopping_cart, 'Корзина', '/cart'),
+        AdaptiveNavItem(Icons.receipt_long, 'Заказы', '/orders/my'),
+        AdaptiveNavItem(Icons.card_giftcard, 'Карта', '/loyalty'),
+      ],
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text('Покупатель',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          const Text(
+            'Покупатель',
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 16),
           Card(
             child: ListTile(

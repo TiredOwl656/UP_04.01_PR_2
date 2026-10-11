@@ -226,7 +226,13 @@ class _ProductListScreenState extends State<ProductListScreen> {
                           TableColumnSpec(
                             label: 'Название',
                             sortField: 'name',
-                            build: (p) => Text(p.name),
+                            build: (p) => ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 280),
+                              child: Text(
+                                p.name,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                           ),
                           TableColumnSpec(
                             label: 'Артикул',
@@ -510,21 +516,24 @@ Future<void> _confirmSoftDelete(
 ) async {
   final ok = await showDialog<bool>(
     context: context,
-    builder: (_) => AlertDialog(
-      title: const Text('Логическое удаление'),
-      content: Text(
-        'Поместить «${p.name}» в удалённые? Товар можно восстановить.',
+    builder: (_) => ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 480),
+      child: AlertDialog(
+        title: const Text('Логическое удаление'),
+        content: Text(
+          'Поместить «${p.name}» в удалённые? Товар можно восстановить.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Отмена'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Удалить'),
+          ),
+        ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('Отмена'),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.pop(context, true),
-          child: const Text('Удалить'),
-        ),
-      ],
     ),
   );
   if (ok == true) await notifier.softDelete(p.id);
@@ -537,20 +546,23 @@ Future<void> _confirmHardDelete(
 ) async {
   final ok = await showDialog<bool>(
     context: context,
-    builder: (_) => AlertDialog(
-      title: const Text('Полное удаление'),
-      content: Text('Удалить «${p.name}» навсегда? Действие необратимо.'),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('Отмена'),
-        ),
-        FilledButton(
-          style: FilledButton.styleFrom(backgroundColor: Colors.red),
-          onPressed: () => Navigator.pop(context, true),
-          child: const Text('Удалить навсегда'),
-        ),
-      ],
+    builder: (_) => ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 480),
+      child: AlertDialog(
+        title: const Text('Полное удаление'),
+        content: Text('Удалить «${p.name}» навсегда? Действие необратимо.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Отмена'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Удалить навсегда'),
+          ),
+        ],
+      ),
     ),
   );
   if (ok == true) await notifier.hardDelete(p.id);
@@ -562,21 +574,24 @@ Future<void> _confirmDeleteSelected(
 ) async {
   final ok = await showDialog<bool>(
     context: context,
-    builder: (_) => AlertDialog(
-      title: const Text('Множественное удаление'),
-      content: Text(
-        'Логически удалить выбранные товары (${notifier.selected.length} шт.)?',
+    builder: (_) => ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 480),
+      child: AlertDialog(
+        title: const Text('Множественное удаление'),
+        content: Text(
+          'Логически удалить выбранные товары (${notifier.selected.length} шт.)?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Отмена'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Удалить'),
+          ),
+        ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('Отмена'),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.pop(context, true),
-          child: const Text('Удалить'),
-        ),
-      ],
     ),
   );
   if (ok == true) await notifier.deleteSelected();

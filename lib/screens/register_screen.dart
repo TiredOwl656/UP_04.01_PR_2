@@ -37,10 +37,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
     try {
       await context.read<AuthNotifier>().register(
-            username: _username.text.trim(),
-            password: _password.text,
-            fullName: _fullName.text.trim(),
-          );
+        username: _username.text.trim(),
+        password: _password.text,
+        fullName: _fullName.text.trim(),
+      );
       if (!mounted) return;
       context.go('/');
     } on ValidationException catch (e) {
@@ -78,8 +78,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 labelText: 'ФИО',
                 border: OutlineInputBorder(),
               ),
-              validator:
-                  V.compose([V.required('ФИО'), V.minLength(3, 'ФИО')]),
+              validator: V.compose([V.required('ФИО'), V.minLength(3, 'ФИО')]),
             ),
             const SizedBox(height: 12),
             TextFormField(
@@ -88,8 +87,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 labelText: 'Логин',
                 border: OutlineInputBorder(),
               ),
-              validator: V.compose(
-                  [V.required('Логин'), V.minLength(3, 'Логин')]),
+              validator: V.compose([
+                V.required('Логин'),
+                V.minLength(3, 'Логин'),
+              ]),
             ),
             const SizedBox(height: 12),
             TextFormField(
@@ -104,8 +105,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             if (_serverError != null) ...[
               const SizedBox(height: 12),
-              Text(_serverError!,
-                  style: const TextStyle(color: Colors.red, fontSize: 14)),
+              Text(
+                _serverError!,
+                style: const TextStyle(color: Colors.red, fontSize: 14),
+              ),
             ],
             const SizedBox(height: 20),
             FilledButton(

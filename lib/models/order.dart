@@ -14,18 +14,18 @@ class OrderItem {
   double get subtotal => price * quantity;
 
   factory OrderItem.fromJson(Map<String, dynamic> j) => OrderItem(
-        productId: j['productId'] as int? ?? 0,
-        productName: j['productName'] as String? ?? '',
-        price: (j['price'] as num?)?.toDouble() ?? 0,
-        quantity: j['quantity'] as int? ?? 0,
-      );
+    productId: j['productId'] as int? ?? 0,
+    productName: j['productName'] as String? ?? '',
+    price: (j['price'] as num?)?.toDouble() ?? 0,
+    quantity: j['quantity'] as int? ?? 0,
+  );
 
   Map<String, dynamic> toJson() => {
-        'productId': productId,
-        'productName': productName,
-        'price': price,
-        'quantity': quantity,
-      };
+    'productId': productId,
+    'productName': productName,
+    'price': price,
+    'quantity': quantity,
+  };
 }
 
 class Order {
@@ -48,27 +48,28 @@ class Order {
   });
 
   String get statusLabel => switch (status) {
-        'new' => 'Новый',
-        'confirmed' => 'Подтверждён',
-        'packed' => 'Собран',
-        'shipped' => 'Отправлен',
-        'delivered' => 'Доставлен',
-        'cancelled' => 'Отменён',
-        _ => status,
-      };
+    'new' => 'Новый',
+    'confirmed' => 'Подтверждён',
+    'packed' => 'Собран',
+    'shipped' => 'Отправлен',
+    'delivered' => 'Доставлен',
+    'cancelled' => 'Отменён',
+    _ => status,
+  };
 
   factory Order.fromJson(Map<String, dynamic> j) => Order(
-        id: j['id'] as int? ?? 0,
-        customerId: j['customerId'] as int? ?? 0,
-        customerName: j['customerName'] as String? ?? '',
-        items: (j['items'] as List?)
-                ?.whereType<Map<String, dynamic>>()
-                .map(OrderItem.fromJson)
-                .toList() ??
-            const [],
-        total: (j['total'] as num?)?.toDouble() ?? 0,
-        status: j['status'] as String? ?? 'new',
-        createdAt: DateTime.tryParse(j['createdAt'] as String? ?? '') ??
-            DateTime.now(),
-      );
+    id: j['id'] as int? ?? 0,
+    customerId: j['customerId'] as int? ?? 0,
+    customerName: j['customerName'] as String? ?? '',
+    items:
+        (j['items'] as List?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(OrderItem.fromJson)
+            .toList() ??
+        const [],
+    total: (j['total'] as num?)?.toDouble() ?? 0,
+    status: j['status'] as String? ?? 'new',
+    createdAt:
+        DateTime.tryParse(j['createdAt'] as String? ?? '') ?? DateTime.now(),
+  );
 }

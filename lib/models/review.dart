@@ -18,19 +18,19 @@ class Review {
   });
 
   String get statusLabel => switch (status) {
-        'approved' => 'Одобрен',
-        'rejected' => 'Отклонён',
-        _ => 'На модерации',
-      };
+    'approved' => 'Одобрен',
+    'rejected' => 'Отклонён',
+    _ => 'На модерации',
+  };
 
   factory Review.fromJson(Map<String, dynamic> j) => Review(
-        id: j['id'] as int? ?? 0,
-        productId: j['productId'] as int? ?? 0,
-        customerId: j['customerId'] as int? ?? 0,
-        rating: j['rating'] as int? ?? 0,
-        text: j['text'] as String? ?? '',
-        status: j['status'] as String? ?? 'pending',
-        createdAt: DateTime.tryParse(j['createdAt'] as String? ?? '') ??
-            DateTime.now(),
-      );
+    id: j['id'] as int? ?? 0,
+    productId: j['productId'] as int? ?? 0,
+    customerId: j['customerId'] as int? ?? 0,
+    rating: j['rating'] as int? ?? 0,
+    text: j['text'] as String? ?? '',
+    status: j['status'] as String? ?? 'pending',
+    createdAt:
+        DateTime.tryParse(j['createdAt'] as String? ?? '') ?? DateTime.now(),
+  );
 }

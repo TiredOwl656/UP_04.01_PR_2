@@ -67,9 +67,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return EntityForm(
@@ -100,10 +98,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           label: 'Цена, руб.',
           initialValue: _existing?.price.toStringAsFixed(0) ?? '',
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          validator: V.compose([
-            V.required('Цена'),
-            V.positiveNumber('Цена'),
-          ]),
+          validator: V.compose([V.required('Цена'), V.positiveNumber('Цена')]),
         ),
         FormFieldSpec(
           key: 'stock',
@@ -148,10 +143,10 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
               border: OutlineInputBorder(),
             ),
             items: _brands
-                .map((b) => DropdownMenuItem<int>(
-                      value: b.id,
-                      child: Text(b.name),
-                    ))
+                .map(
+                  (b) =>
+                      DropdownMenuItem<int>(value: b.id, child: Text(b.name)),
+                )
                 .toList(),
             onChanged: (v) => setState(() => _brandId = v),
             validator: (v) => v == null ? 'Выберите бренд' : null,
@@ -164,10 +159,10 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
               border: OutlineInputBorder(),
             ),
             items: _suppliers
-                .map((s) => DropdownMenuItem<int>(
-                      value: s.id,
-                      child: Text(s.name),
-                    ))
+                .map(
+                  (s) =>
+                      DropdownMenuItem<int>(value: s.id, child: Text(s.name)),
+                )
                 .toList(),
             onChanged: (v) => setState(() => _supplierId = v),
             validator: (v) => v == null ? 'Выберите поставщика' : null,
@@ -213,8 +208,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
         if (repo is PersistentProductRepository) {
           final taken = await repo.isSkuTaken(sku, exceptId: widget.id);
           if (taken) {
-            throw Exception(
-                'Артикул "$sku" уже используется другим товаром');
+            throw Exception('Артикул "$sku" уже используется другим товаром');
           }
         }
 

@@ -78,10 +78,7 @@ class _LoyaltyCardScreenState extends State<LoyaltyCardScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Номер карты',
-                  style: TextStyle(color: Colors.grey),
-                ),
+                const Text('Номер карты', style: TextStyle(color: Colors.grey)),
                 Text(
                   _card!.number,
                   style: const TextStyle(

@@ -75,10 +75,12 @@ class EntityTable<T> extends StatelessWidget {
                       : null,
                   cells: [
                     if (hasSelection)
-                      DataCell(Checkbox(
-                        value: selected.contains(idOf(item)),
-                        onChanged: (_) => onToggleSelect!(idOf(item)),
-                      )),
+                      DataCell(
+                        Checkbox(
+                          value: selected.contains(idOf(item)),
+                          onChanged: (_) => onToggleSelect!(idOf(item)),
+                        ),
+                      ),
                     for (final c in columns) DataCell(c.build(item)),
                     if (actions != null)
                       DataCell(Row(children: actions!(item))),

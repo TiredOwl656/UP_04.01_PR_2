@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../state/auth_notifier.dart';
+import '../widgets/adaptive_scaffold.dart';
 
 class ManagerDashboard extends StatelessWidget {
   const ManagerDashboard({super.key});
@@ -11,25 +12,20 @@ class ManagerDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthNotifier>();
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Менеджер — ${auth.user?.fullName ?? ""}'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Выйти',
-            onPressed: () async {
-              await context.read<AuthNotifier>().logout();
-              if (context.mounted) context.go('/login');
-            },
-          ),
-        ],
-      ),
+    return AdaptiveScaffold(
+      title: 'Менеджер — ${auth.user?.fullName ?? ""}',
+      items: const [
+        AdaptiveNavItem(Icons.store, 'Каталог', '/products'),
+        AdaptiveNavItem(Icons.receipt_long, 'Заказы', '/orders'),
+        AdaptiveNavItem(Icons.rate_review, 'Отзывы', '/reviews/moderation'),
+      ],
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text('Панель менеджера',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          const Text(
+            'Панель менеджера',
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 16),
           Card(
             child: ListTile(

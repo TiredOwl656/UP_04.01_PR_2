@@ -54,16 +54,16 @@ class ProductQuery {
   ProductQuery withPage(int p) => copyWith(page: p);
 
   Map<String, String> toQueryParams() => {
-        if (search.isNotEmpty) 'search': search,
-        if (categoryId != null) 'categoryId': '$categoryId',
-        if (brandId != null) 'brandId': '$brandId',
-        if (yearFrom != null) 'yearFrom': '$yearFrom',
-        if (yearTo != null) 'yearTo': '$yearTo',
-        'sort': '$sortField,${sortAscending ? "asc" : "desc"}',
-        'page': '$page',
-        'size': '$size',
-        if (includeDeleted) 'includeDeleted': 'true',
-      };
+    if (search.isNotEmpty) 'search': search,
+    if (categoryId != null) 'categoryId': '$categoryId',
+    if (brandId != null) 'brandId': '$brandId',
+    if (yearFrom != null) 'yearFrom': '$yearFrom',
+    if (yearTo != null) 'yearTo': '$yearTo',
+    'sort': '$sortField,${sortAscending ? "asc" : "desc"}',
+    'page': '$page',
+    'size': '$size',
+    if (includeDeleted) 'includeDeleted': 'true',
+  };
 
   factory ProductQuery.fromQueryParams(Map<String, String> q) {
     String? s(String k) => q[k];
@@ -109,15 +109,15 @@ class ProductQuery {
 
   @override
   int get hashCode => Object.hash(
-        search,
-        categoryId,
-        brandId,
-        yearFrom,
-        yearTo,
-        sortField,
-        sortAscending,
-        page,
-        size,
-        includeDeleted,
-      );
+    search,
+    categoryId,
+    brandId,
+    yearFrom,
+    yearTo,
+    sortField,
+    sortAscending,
+    page,
+    size,
+    includeDeleted,
+  );
 }

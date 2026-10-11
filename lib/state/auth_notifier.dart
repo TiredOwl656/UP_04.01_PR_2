@@ -54,8 +54,9 @@ class AuthNotifier extends ChangeNotifier {
 
     final startedAt = _prefs.getInt(_kSessionStarted);
     if (startedAt != null) {
-      final elapsed = DateTime.now()
-          .difference(DateTime.fromMillisecondsSinceEpoch(startedAt));
+      final elapsed = DateTime.now().difference(
+        DateTime.fromMillisecondsSinceEpoch(startedAt),
+      );
       if (elapsed >= _maxSession) {
         await logout();
         return;

@@ -61,35 +61,34 @@ class Product {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'sku': sku,
-        'brandId': brandId,
-        'supplierId': supplierId,
-        'categoryIds': categoryIds,
-        'size': size,
-        'color': color,
-        'price': price,
-        'stock': stock,
-        'year': year,
-        'deletedAt': deletedAt?.toIso8601String(),
-      };
+    'id': id,
+    'name': name,
+    'sku': sku,
+    'brandId': brandId,
+    'supplierId': supplierId,
+    'categoryIds': categoryIds,
+    'size': size,
+    'color': color,
+    'price': price,
+    'stock': stock,
+    'year': year,
+    'deletedAt': deletedAt?.toIso8601String(),
+  };
 
   factory Product.fromJson(Map<String, dynamic> json) => Product(
-        id: json['id'] as int? ?? 0,
-        name: json['name'] as String? ?? '',
-        sku: json['sku'] as String? ?? '',
-        brandId: json['brandId'] as int? ?? 0,
-        supplierId: json['supplierId'] as int? ?? 0,
-        categoryIds:
-            (json['categoryIds'] as List?)?.cast<int>() ?? const <int>[],
-        size: json['size'] as String? ?? '',
-        color: json['color'] as String? ?? '',
-        price: (json['price'] as num?)?.toDouble() ?? 0,
-        stock: json['stock'] as int? ?? 0,
-        year: json['year'] as int? ?? 0,
-        deletedAt: json['deletedAt'] == null
-            ? null
-            : DateTime.tryParse(json['deletedAt'] as String),
-      );
+    id: json['id'] as int? ?? 0,
+    name: json['name'] as String? ?? '',
+    sku: json['sku'] as String? ?? '',
+    brandId: json['brandId'] as int? ?? 0,
+    supplierId: json['supplierId'] as int? ?? 0,
+    categoryIds: (json['categoryIds'] as List?)?.cast<int>() ?? const <int>[],
+    size: json['size'] as String? ?? '',
+    color: json['color'] as String? ?? '',
+    price: (json['price'] as num?)?.toDouble() ?? 0,
+    stock: json['stock'] as int? ?? 0,
+    year: json['year'] as int? ?? 0,
+    deletedAt: json['deletedAt'] == null
+        ? null
+        : DateTime.tryParse(json['deletedAt'] as String),
+  );
 }

@@ -69,10 +69,7 @@ class _BrandFormScreenState extends State<BrandFormScreen> {
           label: 'Год основания',
           initialValue: _existing?.foundedYear.toString() ?? '',
           keyboardType: TextInputType.number,
-          validator: V.compose([
-            V.required('Год основания'),
-            V.year(),
-          ]),
+          validator: V.compose([V.required('Год основания'), V.year()]),
         ),
       ],
       onSubmit: (values) async {

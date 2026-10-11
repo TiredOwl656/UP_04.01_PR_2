@@ -18,20 +18,19 @@ class ProductCategory {
     String? description,
     DateTime? deletedAt,
     bool clearDeletedAt = false,
-  }) =>
-      ProductCategory(
-        id: id,
-        name: name ?? this.name,
-        description: description ?? this.description,
-        deletedAt: clearDeletedAt ? null : (deletedAt ?? this.deletedAt),
-      );
+  }) => ProductCategory(
+    id: id,
+    name: name ?? this.name,
+    description: description ?? this.description,
+    deletedAt: clearDeletedAt ? null : (deletedAt ?? this.deletedAt),
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'description': description,
-        'deletedAt': deletedAt?.toIso8601String(),
-      };
+    'id': id,
+    'name': name,
+    'description': description,
+    'deletedAt': deletedAt?.toIso8601String(),
+  };
 
   factory ProductCategory.fromJson(Map<String, dynamic> json) =>
       ProductCategory(

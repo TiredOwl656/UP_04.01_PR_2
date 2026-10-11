@@ -16,7 +16,7 @@ void main() {
       const MaterialApp(home: Scaffold(body: EmptyView())),
     );
     expect(find.byIcon(Icons.search_off), findsOneWidget);
-    expect(find.text('\u041d\u0438\u0447\u0435\u0433\u043e \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u043e'), findsOneWidget);
+    expect(find.text('Ничего не найдено'), findsOneWidget);
   });
 
   testWidgets('ErrorView показывает кнопку повтора', (tester) async {
@@ -25,14 +25,14 @@ void main() {
       MaterialApp(
         home: Scaffold(
           body: ErrorView(
-            message: '\u041e\u0448\u0438\u0431\u043a\u0430 \u0441\u0435\u0442\u0438',
+            message: 'Ошибка сети',
             onRetry: () => retried = true,
           ),
         ),
       ),
     );
-    expect(find.text('\u041e\u0448\u0438\u0431\u043a\u0430 \u0441\u0435\u0442\u0438'), findsOneWidget);
-    await tester.tap(find.text('\u041f\u043e\u0432\u0442\u043e\u0440\u0438\u0442\u044c'));
+    expect(find.text('Ошибка сети'), findsOneWidget);
+    await tester.tap(find.text('Повторить'));
     await tester.pump();
     expect(retried, true);
   });
@@ -67,7 +67,7 @@ void main() {
         ),
       ),
     );
-    expect(find.text('\u041d\u0438\u0447\u0435\u0433\u043e \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u043e'), findsOneWidget);
+    expect(find.text('Ничего не найдено'), findsOneWidget);
     expect(find.text('DATA'), findsNothing);
   });
 
@@ -79,15 +79,15 @@ void main() {
           body: buildStateView(
             status: LoadStatus.error,
             isEmpty: false,
-            error: '\u041e\u0448\u0438\u0431\u043a\u0430',
+            error: 'Ошибка',
             onData: () => const Text('DATA'),
             onRetry: () => retried = true,
           ),
         ),
       ),
     );
-    expect(find.text('\u041e\u0448\u0438\u0431\u043a\u0430'), findsOneWidget);
-    await tester.tap(find.text('\u041f\u043e\u0432\u0442\u043e\u0440\u0438\u0442\u044c'));
+    expect(find.text('Ошибка'), findsOneWidget);
+    await tester.tap(find.text('Повторить'));
     await tester.pump();
     expect(retried, true);
   });

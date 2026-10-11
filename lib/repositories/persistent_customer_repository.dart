@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/seed_data.dart';
@@ -29,8 +30,11 @@ class PersistentCustomerRepository implements CustomerRepository {
       final list = jsonDecode(raw) as List;
       _customers
         ..clear()
-        ..addAll(list.map(
-            (e) => Customer.fromJson((e as Map).cast<String, dynamic>())));
+        ..addAll(
+          list.map(
+            (e) => Customer.fromJson((e as Map).cast<String, dynamic>()),
+          ),
+        );
       _nextId = _customers.isEmpty
           ? 1
           : _customers.map((c) => c.id).reduce((a, b) => a > b ? a : b) + 1;
@@ -64,8 +68,9 @@ class PersistentCustomerRepository implements CustomerRepository {
 
   Future<bool> isEmailTaken(String email, {int? exceptId}) async {
     final needle = email.trim().toLowerCase();
-    return _customers
-        .any((c) => c.email.toLowerCase() == needle && c.id != exceptId);
+    return _customers.any(
+      (c) => c.email.toLowerCase() == needle && c.id != exceptId,
+    );
   }
 
   @override

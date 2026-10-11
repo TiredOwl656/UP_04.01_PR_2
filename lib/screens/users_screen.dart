@@ -76,8 +76,7 @@ class _UsersScreenState extends State<UsersScreen> {
                 if (r != null) _setRole(u.id, r);
               },
               items: Role.values
-                  .map((r) =>
-                      DropdownMenuItem(value: r, child: Text(r.label)))
+                  .map((r) => DropdownMenuItem(value: r, child: Text(r.label)))
                   .toList(),
             ),
           );

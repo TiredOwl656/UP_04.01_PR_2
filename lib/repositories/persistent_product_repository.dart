@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/seed_data.dart';
@@ -31,8 +32,9 @@ class PersistentProductRepository implements ProductRepository {
       final list = jsonDecode(raw) as List;
       _products
         ..clear()
-        ..addAll(list.map(
-            (e) => Product.fromJson((e as Map).cast<String, dynamic>())));
+        ..addAll(
+          list.map((e) => Product.fromJson((e as Map).cast<String, dynamic>())),
+        );
       _nextId = _products.isEmpty
           ? 1
           : _products.map((p) => p.id).reduce((a, b) => a > b ? a : b) + 1;
@@ -56,15 +58,18 @@ class PersistentProductRepository implements ProductRepository {
   Future<PageResult<Product>> find(ProductQuery q) async {
     await Future.delayed(const Duration(milliseconds: 250));
 
-    var rows =
-        _products.where((p) => q.includeDeleted || !p.isDeleted).toList();
+    var rows = _products
+        .where((p) => q.includeDeleted || !p.isDeleted)
+        .toList();
 
     if (q.search.trim().isNotEmpty) {
       final needle = q.search.trim().toLowerCase();
       rows = rows
-          .where((p) =>
-              p.name.toLowerCase().contains(needle) ||
-              p.sku.toLowerCase().contains(needle))
+          .where(
+            (p) =>
+                p.name.toLowerCase().contains(needle) ||
+                p.sku.toLowerCase().contains(needle),
+          )
           .toList();
     }
     if (q.categoryId != null) {
@@ -105,8 +110,9 @@ class PersistentProductRepository implements ProductRepository {
 
   Future<bool> isSkuTaken(String sku, {int? exceptId}) async {
     final needle = sku.trim().toLowerCase();
-    return _products
-        .any((p) => p.sku.toLowerCase() == needle && p.id != exceptId);
+    return _products.any(
+      (p) => p.sku.toLowerCase() == needle && p.id != exceptId,
+    );
   }
 
   Future<int> countBySupplier(int supplierId) async {
