@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../core/api_exceptions.dart';
-import '../models/app_user.dart';
-import '../repositories/api_user_repository.dart';
+import '../repositories/supabase_user_repository.dart';
+import '../state/auth_notifier.dart' show Role;
 
 class UsersScreen extends StatefulWidget {
   const UsersScreen({super.key});
@@ -13,7 +13,7 @@ class UsersScreen extends StatefulWidget {
 }
 
 class _UsersScreenState extends State<UsersScreen> {
-  List<AppUser>? _users;
+  List<ManagedUser>? _users;
   String? _error;
 
   @override
@@ -24,7 +24,7 @@ class _UsersScreenState extends State<UsersScreen> {
 
   Future<void> _load() async {
     try {
-      final list = await context.read<ApiUserRepository>().all();
+      final list = await context.read<SupabaseUserRepository>().all();
       if (!mounted) return;
       setState(() {
         _users = list;
@@ -36,9 +36,9 @@ class _UsersScreenState extends State<UsersScreen> {
     }
   }
 
-  Future<void> _setRole(int id, Role role) async {
+  Future<void> _setRole(ManagedUser u, Role role) async {
     try {
-      await context.read<ApiUserRepository>().setRole(id, role);
+      await context.read<SupabaseUserRepository>().setRole(u.userId, role);
       await _load();
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -61,26 +61,33 @@ class _UsersScreenState extends State<UsersScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Пользователи и роли')),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(12),
-        itemCount: _users!.length,
-        separatorBuilder: (_, _) => const Divider(),
-        itemBuilder: (context, i) {
-          final u = _users![i];
-          return ListTile(
-            title: Text(u.fullName),
-            subtitle: Text('@${u.username} • ${u.role.label}'),
-            trailing: DropdownButton<Role>(
-              value: u.role,
-              onChanged: (r) {
-                if (r != null) _setRole(u.id, r);
-              },
-              items: Role.values
-                  .map((r) => DropdownMenuItem(value: r, child: Text(r.label)))
-                  .toList(),
-            ),
-          );
-        },
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 900),
+          child: ListView.separated(
+            padding: const EdgeInsets.all(12),
+            itemCount: _users!.length,
+            separatorBuilder: (_, _) => const Divider(),
+            itemBuilder: (context, i) {
+              final u = _users![i];
+              return ListTile(
+                title: Text(u.fullName),
+                subtitle: Text(u.email),
+                trailing: DropdownButton<Role>(
+                  value: u.role,
+                  onChanged: (r) {
+                    if (r != null) _setRole(u, r);
+                  },
+                  items: Role.values
+                      .map(
+                        (r) => DropdownMenuItem(value: r, child: Text(r.label)),
+                      )
+                      .toList(),
+                ),
+              );
+            },
+          ),
+        ),
       ),
     );
   }

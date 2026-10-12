@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pr_2_clothing_store/models/app_user.dart';
 import 'package:pr_2_clothing_store/models/product.dart';
+import 'package:pr_2_clothing_store/state/auth_notifier.dart' show Role;
 
 void main() {
   group('Product.fromJson', () {
@@ -41,6 +41,9 @@ void main() {
     });
     test('неизвестное значение — customer', () {
       expect(Role.fromName('unknown'), Role.customer);
+    });
+    test('null — customer', () {
+      expect(Role.fromName(null), Role.customer);
     });
   });
 }

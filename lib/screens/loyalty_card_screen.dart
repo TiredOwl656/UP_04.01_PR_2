@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-
-import '../core/api_exceptions.dart';
-import '../models/loyalty_card.dart';
-import '../repositories/api_loyalty_repository.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class LoyaltyCardScreen extends StatefulWidget {
   const LoyaltyCardScreen({super.key});
@@ -14,7 +10,7 @@ class LoyaltyCardScreen extends StatefulWidget {
 }
 
 class _LoyaltyCardScreenState extends State<LoyaltyCardScreen> {
-  LoyaltyCard? _card;
+  Map<String, dynamic>? _card;
   String? _error;
   bool _loading = true;
 
@@ -26,83 +22,118 @@ class _LoyaltyCardScreenState extends State<LoyaltyCardScreen> {
 
   Future<void> _load() async {
     try {
-      final c = await context.read<ApiLoyaltyRepository>().myCard();
+      final db = Supabase.instance.client;
+      final userId = db.auth.currentUser?.id;
+      if (userId == null) {
+        throw Exception('Не выполнен вход');
+      }
+
+      final row = await db
+          .from('customers')
+          .select('card_number, bonus_points')
+          .eq('user_id', userId)
+          .maybeSingle();
+
       if (!mounted) return;
       setState(() {
-        _card = c;
+        _card = row;
         _loading = false;
+        _error = null;
       });
-    } on ApiException catch (e) {
+    } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e.message;
         _loading = false;
+        _error = 'Ошибка: $e';
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final back = IconButton(
-      icon: const Icon(Icons.arrow_back),
-      onPressed: () => context.go('/'),
-    );
-
-    if (_loading) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Карта лояльности'), leading: back),
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
-    if (_error != null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Карта лояльности'), leading: back),
-        body: Center(child: Text(_error!)),
-      );
-    }
-    if (_card == null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Карта лояльности'), leading: back),
-        body: const Center(child: Text('У вас пока нет карты лояльности')),
-      );
-    }
-
     return Scaffold(
-      appBar: AppBar(title: const Text('Карта лояльности'), leading: back),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Card(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Номер карты', style: TextStyle(color: Colors.grey)),
-                Text(
-                  _card!.number,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Бонусные баллы',
-                  style: TextStyle(color: Colors.grey),
-                ),
-                Text(
-                  '${_card!.bonusPoints}',
-                  style: const TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
+      appBar: AppBar(
+        title: const Text('Карта лояльности'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go('/'),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Обновить',
+            onPressed: _load,
+          ),
+        ],
       ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+          ? Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                  const SizedBox(height: 12),
+                  Text(_error!),
+                  const SizedBox(height: 16),
+                  FilledButton(
+                    onPressed: _load,
+                    child: const Text('Повторить'),
+                  ),
+                ],
+              ),
+            )
+          : _card == null || _card!['card_number'] == null
+          ? const Center(
+              child: Text(
+                'У вас пока нет карты лояльности.\n'
+                'Обратитесь к менеджеру для её оформления.',
+                textAlign: TextAlign.center,
+              ),
+            )
+          : Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Номер карты',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                          Text(
+                            '${_card!['card_number']}',
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Бонусные баллы',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                          Text(
+                            '${_card!['bonus_points'] ?? 0}',
+                            style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
     );
   }
 }

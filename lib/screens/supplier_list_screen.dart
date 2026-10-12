@@ -17,9 +17,9 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
   bool _showDeleted = false;
 
   Future<void> _tryDelete(int id, String name) async {
-    final notifier = context.read<SupplierListNotifier>();
+    final n = context.read<SupplierListNotifier>();
     try {
-      await notifier.softDelete(id);
+      await n.softDelete(id);
     } on ConflictException catch (e) {
       if (!mounted) return;
       await showDialog<void>(
@@ -63,23 +63,17 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
           IconButton(
             icon: const Icon(Icons.add),
             tooltip: 'Добавить поставщика',
-            onPressed: () => context.go('/suppliers/new'),
+            onPressed: () => context.go('/admin/suppliers/new'),
           ),
         ],
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Row(
-              children: [
-                Checkbox(
-                  value: _showDeleted,
-                  onChanged: (v) => setState(() => _showDeleted = v ?? false),
-                ),
-                const Text('Показывать удалённых'),
-              ],
-            ),
+          CheckboxListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+            title: const Text('Показывать удалённых'),
+            value: _showDeleted,
+            onChanged: (v) => setState(() => _showDeleted = v ?? false),
           ),
           const Divider(height: 1),
           Expanded(
@@ -111,7 +105,6 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
                         ),
                         subtitle: Text(
                           '${s.country} • ${s.email} • ${s.phone}',
-                          overflow: TextOverflow.ellipsis,
                         ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -127,12 +120,43 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
                                 icon: const Icon(Icons.edit),
                                 tooltip: 'Редактировать',
                                 onPressed: () =>
-                                    context.go('/suppliers/${s.id}/edit'),
+                                    context.go('/admin/suppliers/${s.id}/edit'),
                               ),
                               IconButton(
                                 icon: const Icon(Icons.delete_outline),
                                 tooltip: 'Удалить',
                                 onPressed: () => _tryDelete(s.id, s.name),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete_forever),
+                                tooltip: 'Удалить навсегда',
+                                onPressed: () async {
+                                  final ok = await showDialog<bool>(
+                                    context: context,
+                                    builder: (_) => AlertDialog(
+                                      title: const Text('Полное удаление'),
+                                      content: Text(
+                                        'Удалить поставщика «${s.name}» навсегда?',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, false),
+                                          child: const Text('Отмена'),
+                                        ),
+                                        FilledButton(
+                                          style: FilledButton.styleFrom(
+                                            backgroundColor: Colors.red,
+                                          ),
+                                          onPressed: () =>
+                                              Navigator.pop(context, true),
+                                          child: const Text('Удалить'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                  if (ok == true) await n.hardDelete(s.id);
+                                },
                               ),
                             ],
                           ],

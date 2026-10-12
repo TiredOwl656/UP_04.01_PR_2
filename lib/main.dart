@@ -1,26 +1,22 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app.dart';
-import 'core/api_client.dart';
-import 'core/auth_api.dart';
-import 'repositories/api_audit_repository.dart';
-import 'repositories/api_brand_repository.dart';
-import 'repositories/api_category_repository.dart';
-import 'repositories/api_customer_repository.dart';
-import 'repositories/api_loyalty_repository.dart';
-import 'repositories/api_order_repository.dart';
-import 'repositories/api_product_repository.dart';
-import 'repositories/api_review_repository.dart';
-import 'repositories/api_supplier_repository.dart';
-import 'repositories/api_user_repository.dart';
+import 'core/supabase_config.dart';
 import 'repositories/brand_repository.dart';
 import 'repositories/category_repository.dart';
 import 'repositories/customer_repository.dart';
 import 'repositories/product_repository.dart';
+import 'repositories/supabase_brand_repository.dart';
+import 'repositories/supabase_category_repository.dart';
+import 'repositories/supabase_customer_repository.dart';
+import 'repositories/supabase_order_repository.dart';
+import 'repositories/supabase_product_repository.dart';
+import 'repositories/supabase_review_repository.dart';
+import 'repositories/supabase_supplier_repository.dart';
+import 'repositories/supabase_user_repository.dart';
 import 'repositories/supplier_repository.dart';
 import 'state/auth_notifier.dart';
 import 'state/brand_list_notifier.dart';
@@ -33,43 +29,43 @@ import 'state/supplier_list_notifier.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
-  final prefs = await SharedPreferences.getInstance();
 
-  late AuthNotifier authNotifier;
-  final dio = buildDio(() => authNotifier);
-  final authApi = AuthApi(dio);
+  await Supabase.initialize(url: supabaseUrl, publishableKey: supabaseAnonKey);
 
-  authNotifier = AuthNotifier(prefs, authApi);
-  await authNotifier.restore();
+  runApp(const _AppRoot());
+}
 
-  runApp(
-    MultiProvider(
+class _AppRoot extends StatelessWidget {
+  const _AppRoot();
+
+  @override
+  Widget build(BuildContext context) {
+    final supabase = Supabase.instance.client;
+
+    return MultiProvider(
       providers: [
-        Provider<Dio>.value(value: dio),
-        ChangeNotifierProvider<AuthNotifier>.value(value: authNotifier),
+        Provider<SupabaseClient>.value(value: supabase),
+        ChangeNotifierProvider(create: (_) => AuthNotifier(supabase)),
         ChangeNotifierProvider(create: (_) => CartNotifier()),
 
         Provider<ProductRepository>(
-          create: (c) => ApiProductRepository(c.read<Dio>()),
+          create: (_) => SupabaseProductRepository(supabase),
         ),
         Provider<BrandRepository>(
-          create: (c) => ApiBrandRepository(c.read<Dio>()),
+          create: (_) => SupabaseBrandRepository(supabase),
         ),
         Provider<CategoryRepository>(
-          create: (c) => ApiCategoryRepository(c.read<Dio>()),
+          create: (_) => SupabaseCategoryRepository(supabase),
         ),
         Provider<SupplierRepository>(
-          create: (c) => ApiSupplierRepository(c.read<Dio>()),
+          create: (_) => SupabaseSupplierRepository(supabase),
         ),
         Provider<CustomerRepository>(
-          create: (c) => ApiCustomerRepository(c.read<Dio>()),
+          create: (_) => SupabaseCustomerRepository(supabase),
         ),
-
-        Provider(create: (c) => ApiOrderRepository(c.read<Dio>())),
-        Provider(create: (c) => ApiReviewRepository(c.read<Dio>())),
-        Provider(create: (c) => ApiUserRepository(c.read<Dio>())),
-        Provider(create: (c) => ApiAuditRepository(c.read<Dio>())),
-        Provider(create: (c) => ApiLoyaltyRepository(c.read<Dio>())),
+        Provider(create: (_) => SupabaseUserRepository(supabase)),
+        Provider(create: (_) => SupabaseOrderRepository(supabase)),
+        Provider(create: (_) => SupabaseReviewRepository(supabase)),
 
         ChangeNotifierProvider(
           create: (c) =>
@@ -91,7 +87,7 @@ Future<void> main() async {
               CustomerListNotifier(c.read<CustomerRepository>())..load(),
         ),
       ],
-      child: const LibraryApp(),
-    ),
-  );
+      child: const LibraryApp(), // ← из app.dart
+    );
+  }
 }

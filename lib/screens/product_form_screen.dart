@@ -9,7 +9,6 @@ import '../models/product_category.dart';
 import '../models/supplier.dart';
 import '../repositories/brand_repository.dart';
 import '../repositories/category_repository.dart';
-import '../repositories/persistent_product_repository.dart';
 import '../repositories/product_repository.dart';
 import '../repositories/supplier_repository.dart';
 import '../validators/validators.dart';
@@ -204,13 +203,6 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
         final repo = context.read<ProductRepository>();
         final router = GoRouter.of(context);
         final sku = values['sku']!;
-
-        if (repo is PersistentProductRepository) {
-          final taken = await repo.isSkuTaken(sku, exceptId: widget.id);
-          if (taken) {
-            throw Exception('Артикул "$sku" уже используется другим товаром');
-          }
-        }
 
         final product = Product(
           id: _existing?.id ?? 0,

@@ -50,18 +50,22 @@ class AdaptiveScaffold extends StatelessWidget {
         appBar: AppBar(title: Text(title), actions: [logout]),
         body: Row(
           children: [
-            NavigationRail(
-              selectedIndex: 0,
-              onDestinationSelected: (i) => context.go(items[i].route),
-              labelType: NavigationRailLabelType.all,
-              destinations: items
-                  .map(
-                    (it) => NavigationRailDestination(
-                      icon: Icon(it.icon),
-                      label: Text(it.label),
-                    ),
-                  )
-                  .toList(),
+            SingleChildScrollView(
+              child: IntrinsicHeight(
+                child: NavigationRail(
+                  selectedIndex: 0,
+                  onDestinationSelected: (i) => context.go(items[i].route),
+                  labelType: NavigationRailLabelType.all,
+                  destinations: items
+                      .map(
+                        (it) => NavigationRailDestination(
+                          icon: Icon(it.icon),
+                          label: Text(it.label),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
             ),
             const VerticalDivider(width: 1),
             Expanded(child: content),
@@ -72,6 +76,33 @@ class AdaptiveScaffold extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(title), actions: [logout]),
+      drawer: items.length > 4
+          ? Drawer(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  DrawerHeader(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    child: Text(
+                      title,
+                      style: const TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                  ),
+                  for (final it in items)
+                    ListTile(
+                      leading: Icon(it.icon),
+                      title: Text(it.label),
+                      onTap: () {
+                        Navigator.pop(context);
+                        context.go(it.route);
+                      },
+                    ),
+                ],
+              ),
+            )
+          : null,
       body: content,
       bottomNavigationBar: items.length > 4
           ? null

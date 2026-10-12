@@ -52,7 +52,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
     context.go('/products?$qs');
   }
 
-  void _addToCart(Product p) {
+  void _addToCart(BuildContext context, Product p) {
     if (p.stock <= 0) {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Товара нет в наличии')));
@@ -86,6 +86,17 @@ class _ProductListScreenState extends State<ProductListScreen> {
     final categories = context.watch<CategoryListNotifier>().items;
     final brands = context.watch<BrandListNotifier>().result.items;
     final q = notifier.query;
+
+    // Для админа ведём на /admin/products, для остальных — на /products
+    final baseListPath = auth.canManageCatalog
+        ? '/admin/products'
+        : '/products';
+    final baseEditPath = auth.canManageCatalog
+        ? '/admin/products'
+        : '/products';
+    final baseNewPath = auth.canManageCatalog
+        ? '/admin/products/new'
+        : '/products/new';
 
     return Scaffold(
       appBar: AppBar(
@@ -154,18 +165,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
               tooltip: 'Модерация отзывов',
               onPressed: () => context.go('/reviews/moderation'),
             ),
-          if (auth.canManageCatalog) ...[
+          if (auth.canManageCatalog)
             IconButton(
               icon: const Icon(Icons.add),
               tooltip: 'Добавить товар',
-              onPressed: () => context.go('/products/new'),
+              onPressed: () => context.go(baseNewPath),
             ),
-            IconButton(
-              icon: const Icon(Icons.admin_panel_settings),
-              tooltip: 'Панель администратора',
-              onPressed: () => context.go('/'),
-            ),
-          ],
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Выйти',
@@ -249,7 +254,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                             sortField: 'price',
                             numeric: true,
                             build: (p) =>
-                                Text('${p.price.toStringAsFixed(0)} \u20BD'),
+                                Text('${p.price.toStringAsFixed(0)} ₽'),
                           ),
                           TableColumnSpec(
                             label: 'Остаток',
@@ -258,53 +263,65 @@ class _ProductListScreenState extends State<ProductListScreen> {
                             build: (p) => Text('${p.stock}'),
                           ),
                         ],
-                        cardBuilder: (p) => Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              p.name,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
+                        cardBuilder: (p) => InkWell(
+                          onTap: () => context.go('/products/${p.id}'),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  p.name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text('Артикул: ${p.sku}'),
+                                Text(
+                                  'Год: ${p.year} • Размер: ${p.size} • Цвет: ${p.color}',
+                                ),
+                                Text(
+                                  'Цена: ${p.price.toStringAsFixed(0)} ₽ • Остаток: ${p.stock}',
+                                ),
+                                if (p.isDeleted)
+                                  const Text(
+                                    'Удалён',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                              ],
                             ),
-                            const SizedBox(height: 4),
-                            Text('Артикул: ${p.sku}'),
-                            Text(
-                              'Год: ${p.year} \u2022 Размер: ${p.size} \u2022 Цвет: ${p.color}',
-                            ),
-                            Text(
-                              'Цена: ${p.price.toStringAsFixed(0)} \u20BD \u2022 Остаток: ${p.stock}',
-                            ),
-                            if (p.isDeleted)
-                              const Text(
-                                'Удалён',
-                                style: TextStyle(color: Colors.red),
-                              ),
-                          ],
+                          ),
                         ),
                         actions: (p) => [
-                          // Покупатель: добавить в корзину
+                          // Открыть детали — для всех
+                          IconButton(
+                            icon: const Icon(Icons.open_in_new),
+                            tooltip: 'Открыть',
+                            onPressed: () => context.go('/products/${p.id}'),
+                          ),
+                          // Покупатель: в корзину
                           if (auth.canPlaceOrder)
                             IconButton(
                               icon: const Icon(Icons.add_shopping_cart),
                               tooltip: 'В корзину',
-                              onPressed: () => _addToCart(p),
+                              onPressed: () => _addToCart(context, p),
                             ),
-                          // Администратор: восстановить удалённый
+                          // Админ: восстановить удалённый
                           if (p.isDeleted && auth.canManageCatalog)
                             IconButton(
                               icon: const Icon(Icons.restore),
                               tooltip: 'Восстановить',
                               onPressed: () => notifier.restore(p.id),
                             ),
-                          // Администратор: редактировать / удалить
+                          // Админ: редактировать / удалить
                           if (!p.isDeleted && auth.canManageCatalog) ...[
                             IconButton(
                               icon: const Icon(Icons.edit),
                               tooltip: 'Редактировать',
                               onPressed: () =>
-                                  context.go('/products/${p.id}/edit'),
+                                  context.go('$baseEditPath/${p.id}/edit'),
                             ),
                             IconButton(
                               icon: const Icon(Icons.delete_outline),

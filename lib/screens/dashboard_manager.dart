@@ -13,7 +13,7 @@ class ManagerDashboard extends StatelessWidget {
     final auth = context.watch<AuthNotifier>();
 
     return AdaptiveScaffold(
-      title: 'Менеджер — ${auth.user?.fullName ?? ""}',
+      title: 'Менеджер — ${auth.fullName ?? ""}',
       items: const [
         AdaptiveNavItem(Icons.store, 'Каталог', '/products'),
         AdaptiveNavItem(Icons.receipt_long, 'Заказы', '/orders'),

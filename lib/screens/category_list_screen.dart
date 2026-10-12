@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../core/api_exceptions.dart';
 import '../state/category_list_notifier.dart';
 import '../widgets/state_views.dart';
-import '../core/api_exceptions.dart';
 
 class CategoryListScreen extends StatefulWidget {
   const CategoryListScreen({super.key});
@@ -17,9 +17,9 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
   bool _showDeleted = false;
 
   Future<void> _tryDelete(int id, String name) async {
-    final notifier = context.read<CategoryListNotifier>();
+    final n = context.read<CategoryListNotifier>();
     try {
-      await notifier.softDelete(id);
+      await n.softDelete(id);
     } on ConflictException catch (e) {
       if (!mounted) return;
       await showDialog<void>(
@@ -62,7 +62,8 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => context.go('/categories/new'),
+            tooltip: 'Добавить категорию',
+            onPressed: () => context.go('/admin/categories/new'),
           ),
         ],
       ),
@@ -81,48 +82,88 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
               isEmpty: items.isEmpty,
               error: n.error,
               onRetry: n.load,
-              onData: () => ListView.separated(
-                padding: const EdgeInsets.all(12),
-                itemCount: items.length,
-                separatorBuilder: (_, _) => const Divider(),
-                itemBuilder: (context, i) {
-                  final c = items[i];
-                  final deleted = c.isDeleted;
-                  return ListTile(
-                    title: Text(
-                      c.name,
-                      style: deleted
-                          ? const TextStyle(
-                              color: Colors.red,
-                              decoration: TextDecoration.lineThrough,
-                            )
-                          : null,
-                    ),
-                    subtitle: Text(c.description),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (deleted)
-                          IconButton(
-                            icon: const Icon(Icons.restore),
-                            tooltip: 'Восстановить',
-                            onPressed: () => n.restore(c.id),
-                          )
-                        else ...[
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () =>
-                                context.go('/categories/${c.id}/edit'),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline),
-                            onPressed: () => _tryDelete(c.id, c.name),
-                          ),
-                        ],
-                      ],
-                    ),
-                  );
-                },
+              onData: () => Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1400),
+                  child: ListView.separated(
+                    padding: const EdgeInsets.all(12),
+                    itemCount: items.length,
+                    separatorBuilder: (_, _) => const Divider(),
+                    itemBuilder: (context, i) {
+                      final c = items[i];
+                      final deleted = c.isDeleted;
+                      return ListTile(
+                        title: Text(
+                          c.name,
+                          overflow: TextOverflow.ellipsis,
+                          style: deleted
+                              ? const TextStyle(
+                                  color: Colors.red,
+                                  decoration: TextDecoration.lineThrough,
+                                )
+                              : null,
+                        ),
+                        subtitle: Text(c.description),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (deleted)
+                              IconButton(
+                                icon: const Icon(Icons.restore),
+                                tooltip: 'Восстановить',
+                                onPressed: () => n.restore(c.id),
+                              )
+                            else ...[
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                tooltip: 'Редактировать',
+                                onPressed: () => context.go(
+                                  '/admin/categories/${c.id}/edit',
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline),
+                                tooltip: 'Удалить',
+                                onPressed: () => _tryDelete(c.id, c.name),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete_forever),
+                                tooltip: 'Удалить навсегда',
+                                onPressed: () async {
+                                  final ok = await showDialog<bool>(
+                                    context: context,
+                                    builder: (_) => AlertDialog(
+                                      title: const Text('Полное удаление'),
+                                      content: Text(
+                                        'Удалить категорию «${c.name}» навсегда?',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, false),
+                                          child: const Text('Отмена'),
+                                        ),
+                                        FilledButton(
+                                          style: FilledButton.styleFrom(
+                                            backgroundColor: Colors.red,
+                                          ),
+                                          onPressed: () =>
+                                              Navigator.pop(context, true),
+                                          child: const Text('Удалить'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                  if (ok == true) await n.hardDelete(c.id);
+                                },
+                              ),
+                            ],
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
           ),

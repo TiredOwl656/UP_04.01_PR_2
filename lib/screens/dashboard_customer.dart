@@ -13,7 +13,7 @@ class CustomerDashboard extends StatelessWidget {
     final auth = context.watch<AuthNotifier>();
 
     return AdaptiveScaffold(
-      title: 'Магазин — ${auth.user?.fullName ?? ""}',
+      title: 'Магазин — ${auth.fullName ?? ""}',
       items: const [
         AdaptiveNavItem(Icons.store, 'Каталог', '/products'),
         AdaptiveNavItem(Icons.shopping_cart, 'Корзина', '/cart'),
